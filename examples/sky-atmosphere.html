@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Sky Atmosphere</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #fff; font-size: 13px; background: rgba(0,0,0,.55); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center; }
+label { color: #fff; font-size: 12px; text-shadow: 0 1px 3px #000; }
+input[type=range] { width: 110px; }
+button { background: rgba(255,255,255,.2); color: #fff; border: 1px solid rgba(255,255,255,.5);
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(255,200,80,.4); border-color: #ffc850; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Sky — Sky Shader · Sun Position · Rayleigh · Turbidity</div>
+<div id="controls">
+  <label>Elevation <input type="range" id="elevation" min="0" max="90" step="1" value="15"></label>
+  <label>Azimuth <input type="range" id="azimuth" min="-180" max="180" step="1" value="180"></label>
+  <label>Turbidity <input type="range" id="turbidity" min="1" max="20" step="0.5" value="10"></label>
+  <label>Rayleigh <input type="range" id="rayleigh" min="0" max="4" step="0.1" value="3"></label>
+  <button id="btnAuto" class="active">Auto Cycle</button>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { Sky }           from 'three/addons/objects/Sky.js';
+import { Water }         from 'three/addons/objects/Water.js';
+
+const scene    = new THREE.Scene();
+const camera   = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 10000);
+camera.position.set(0, 10, 50);
+const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.5;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI * 0.495;
+
+// Sky
+const sky = new Sky();
+sky.scale.setScalar(450000);
+scene.add(sky);
+
+const sun = new THREE.Vector3();
+const skyUni = sky.material.uniforms;
+
+// Water
+const waterGeo = new THREE.PlaneGeometry(10000, 10000);
+const water = new Water(waterGeo, {
+  textureWidth: 512, textureHeight: 512,
+  waterNormals: new THREE.TextureLoader().load(
+    'https://cdn.jsdelivr.net/npm/three@0.167.1/examples/textures/waternormals.jpg',
+    t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; }
+  ),
+  sunDirection: new THREE.Vector3(),
+  sunColor: 0xffffff,
+  waterColor: 0x001e0f,
+  distortionScale: 3.7,
+});
+water.rotation.x = -Math.PI / 2;
+scene.add(water);
+
+// Ground plane / island
+const islandGeo = new THREE.CylinderGeometry(20, 25, 3, 16);
+const islandMat = new THREE.MeshStandardMaterial({ color: 0x88aa66, roughness: 0.95 });
+const island = new THREE.Mesh(islandGeo, islandMat);
+island.position.y = -0.5;
+scene.add(island);
+
+// Trees
+for (let i = 0; i < 8; i++) {
+  const angle = (i / 8) * Math.PI * 2;
+  const r = 8 + Math.random() * 6;
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.2, 0.3, 3, 6),
+    new THREE.MeshStandardMaterial({ color: 0x6b4423 })
+  );
+  trunk.position.set(Math.cos(angle)*r, 2, Math.sin(angle)*r);
+  scene.add(trunk);
+  const crown = new THREE.Mesh(
+    new THREE.ConeGeometry(2, 4, 7),
+    new THREE.MeshStandardMaterial({ color: 0x2d6a2d })
+  );
+  crown.position.set(Math.cos(angle)*r, 5.5, Math.sin(angle)*r);
+  scene.add(crown);
+}
+
+let elevation = 15, azimuth = 180, turbidity = 10, rayleigh = 3;
+let autoCycle = true;
+
+function updateSky() {
+  skyUni.turbidity.value = turbidity;
+  skyUni.rayleigh.value = rayleigh;
+  skyUni.mieCoefficient.value = 0.005;
+  skyUni.mieDirectionalG.value = 0.7;
+
+  const phi   = THREE.MathUtils.degToRad(90 - elevation);
+  const theta = THREE.MathUtils.degToRad(azimuth);
+  sun.setFromSphericalCoords(1, phi, theta);
+  skyUni.sunPosition.value.copy(sun);
+  water.material.uniforms.sunDirection.value.copy(sun).normalize();
+  renderer.toneMappingExposure = Math.max(0.1, 0.5 * (elevation / 90 + 0.2));
+}
+
+document.getElementById('elevation') .addEventListener('input', e => { elevation = +e.target.value; updateSky(); });
+document.getElementById('azimuth')   .addEventListener('input', e => { azimuth = +e.target.value; updateSky(); });
+document.getElementById('turbidity') .addEventListener('input', e => { turbidity = +e.target.value; updateSky(); });
+document.getElementById('rayleigh')  .addEventListener('input', e => { rayleigh = +e.target.value; updateSky(); });
+document.getElementById('btnAuto')   .addEventListener('click', e => { autoCycle=!autoCycle; e.currentTarget.classList.toggle('active',autoCycle); });
+
+updateSky();
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  if (autoCycle) {
+    elevation = (Math.sin(t * 0.08) * 0.5 + 0.5) * 40 + 2;
+    azimuth = t * 5;
+    document.getElementById('elevation').value = elevation;
+    document.getElementById('azimuth').value = azimuth % 360;
+    updateSky();
+  }
+  water.material.uniforms.time.value += 1/60;
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

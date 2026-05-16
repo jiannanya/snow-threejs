@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Water Surface</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #050b18; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+label { color: #aaa; font-size: 12px; }
+input[type=range] { width: 90px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Animated Water — Sine Wave Displacement · Vertex Shader | Drag to Rotate</div>
+<div id="controls">
+  <label>Wave Height <input type="range" id="height" min="0.1" max="3" step="0.1" value="0.8"></label>
+  <label>Wave Speed <input type="range" id="waveSpeed" min="0.5" max="5" step="0.1" value="1.5"></label>
+  <label>Wave Scale <input type="range" id="scale" min="0.5" max="4" step="0.1" value="1.5"></label>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x050b18);
+scene.fog = new THREE.FogExp2(0x050b18, 0.018);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 10, 18);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 0, 0);
+
+// Sky gradient
+const skyGeo = new THREE.SphereGeometry(100, 16, 16);
+skyGeo.scale(-1, 1, 1);
+const skyMat = new THREE.ShaderMaterial({
+  uniforms: { topColor: { value: new THREE.Color(0x0a1520) }, bottomColor: { value: new THREE.Color(0x0d2a4a) } },
+  vertexShader: `varying vec3 vPos; void main(){ vPos = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader: `varying vec3 vPos; uniform vec3 topColor,bottomColor;
+    void main(){ float t = clamp((vPos.y+100.0)/200.0, 0.0, 1.0); gl_FragColor = vec4(mix(bottomColor,topColor,t),1.0); }`,
+  side: THREE.BackSide,
+});
+scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+// Moon light
+scene.add(new THREE.AmbientLight(0x102040, 1));
+const moonLight = new THREE.DirectionalLight(0x8ab4d6, 1.5);
+moonLight.position.set(-5, 20, 10);
+scene.add(moonLight);
+
+// Stars
+const sGeo = new THREE.BufferGeometry();
+const sp = new Float32Array(4000);
+for (let i = 0; i < sp.length; i++) sp[i] = (Math.random() - 0.5) * 200;
+sGeo.setAttribute('position', new THREE.BufferAttribute(sp, 3));
+scene.add(new THREE.Points(sGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.25 })));
+
+// Water plane using ShaderMaterial
+const SEGMENTS = 128;
+const SIZE = 40;
+const waterGeo = new THREE.PlaneGeometry(SIZE, SIZE, SEGMENTS, SEGMENTS);
+waterGeo.rotateX(-Math.PI / 2);
+
+const uniforms = {
+  u_time:      { value: 0 },
+  u_height:    { value: 0.8 },
+  u_speed:     { value: 1.5 },
+  u_scale:     { value: 1.5 },
+  u_deepColor: { value: new THREE.Color(0x0a2040) },
+  u_crestColor:{ value: new THREE.Color(0x5090c0) },
+};
+
+const waterMat = new THREE.ShaderMaterial({
+  uniforms,
+  vertexShader: `
+    uniform float u_time, u_height, u_speed, u_scale;
+    varying float vHeight;
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      vec3 pos = position;
+      float wave1 = sin(pos.x * u_scale + u_time * u_speed) * cos(pos.z * u_scale * 0.7 + u_time * u_speed * 0.8);
+      float wave2 = sin(pos.x * u_scale * 1.5 - u_time * u_speed * 1.2) * sin(pos.z * u_scale * 1.3 + u_time * u_speed);
+      float wave3 = cos(pos.x * u_scale * 0.5 + pos.z * u_scale * 0.8 + u_time * u_speed * 0.6);
+      pos.y = (wave1 * 0.5 + wave2 * 0.3 + wave3 * 0.2) * u_height;
+      vHeight = pos.y;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform vec3 u_deepColor, u_crestColor;
+    uniform float u_height;
+    varying float vHeight;
+    varying vec2 vUv;
+    void main() {
+      float t = clamp((vHeight + u_height) / (u_height * 2.0), 0.0, 1.0);
+      vec3 color = mix(u_deepColor, u_crestColor, t);
+      // Foam at crests
+      float foam = smoothstep(0.7, 1.0, t);
+      color = mix(color, vec3(0.8, 0.9, 1.0), foam * 0.6);
+      // Fresnel-like edge darkening
+      gl_FragColor = vec4(color, 0.88);
+    }
+  `,
+  transparent: true,
+  side: THREE.DoubleSide,
+});
+
+const water = new THREE.Mesh(waterGeo, waterMat);
+scene.add(water);
+
+// Boats/objects floating on water
+const boatGeo = new THREE.BoxGeometry(1.5, 0.4, 3);
+const boatMat = new THREE.MeshStandardMaterial({ color: 0xcc8844, roughness: 0.7 });
+const boats = [-6, 0, 6].map(x => {
+  const b = new THREE.Mesh(boatGeo, boatMat);
+  b.position.set(x, 0, -3);
+  scene.add(b);
+  return b;
+});
+
+// Moon reflection streaks
+const moonReflGeo = new THREE.PlaneGeometry(0.8, 10);
+const moonReflMat = new THREE.MeshBasicMaterial({ color: 0xffeedd, transparent: true, opacity: 0.15 });
+const moonRefl = new THREE.Mesh(moonReflGeo, moonReflMat);
+moonRefl.rotation.x = -Math.PI / 2;
+moonRefl.position.set(0, 0.01, 5);
+scene.add(moonRefl);
+
+document.getElementById('height')   .addEventListener('input', e => { uniforms.u_height.value    = +e.target.value; });
+document.getElementById('waveSpeed').addEventListener('input', e => { uniforms.u_speed.value     = +e.target.value; });
+document.getElementById('scale')    .addEventListener('input', e => { uniforms.u_scale.value     = +e.target.value; });
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  uniforms.u_time.value = t;
+
+  // Float boats on waves
+  boats.forEach((b, i) => {
+    const x = b.position.x, z = b.position.z;
+    const h = uniforms.u_height.value;
+    const s = uniforms.u_speed.value, sc = uniforms.u_scale.value;
+    const y = (Math.sin(x * sc + t * s) * 0.5 + Math.sin(z * sc * 0.7 + t * s * 0.8) * 0.3) * h;
+    b.position.y = y + 0.2;
+    b.rotation.z = Math.sin(x * sc + t * s) * 0.08;
+    b.rotation.x = Math.sin(z * sc * 0.7 + t * s * 0.8) * 0.06;
+  });
+
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

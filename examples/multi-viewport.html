@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Multi Viewport</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; overflow: hidden; font-family: monospace; }
+#divider { position: absolute; top: 0; left: 50%; width: 2px; height: 100%; background: #555; pointer-events: none; }
+#labelL { position: absolute; top: 12px; left: 12px; color: #aaa; font-size: 12px;
+  background: rgba(0,0,0,.6); padding: 4px 10px; border-radius: 4px; }
+#labelR { position: absolute; top: 12px; right: 12px; color: #aaa; font-size: 12px;
+  background: rgba(0,0,0,.6); padding: 4px 10px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="divider"></div>
+<div id="labelL">Perspective Camera</div>
+<div id="labelR">Orthographic Camera</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const canvas   = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.setSize(innerWidth, innerHeight);
+
+// Shared scene
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d0d1a);
+
+// Lights
+scene.add(new THREE.AmbientLight(0x334466, 1));
+const dLight = new THREE.DirectionalLight(0xffffff, 2);
+dLight.position.set(6, 12, 8);
+dLight.castShadow = true;
+scene.add(dLight);
+scene.add(new THREE.GridHelper(20, 20, 0x222244, 0x111133));
+
+// Objects
+const objs = [
+  { geo: new THREE.BoxGeometry(1.5, 1.5, 1.5),     pos: [-3, 0.75, 0], color: 0xff4444 },
+  { geo: new THREE.SphereGeometry(0.8, 32, 32),    pos: [  0, 0.8,  0], color: 0x44ff88 },
+  { geo: new THREE.TorusKnotGeometry(0.7, 0.2, 80, 12), pos: [3, 1.0, 0], color: 0x4488ff },
+];
+objs.forEach(({ geo, pos, color }) => {
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.3 }));
+  m.position.set(...pos);
+  m.castShadow = true;
+  scene.add(m);
+});
+
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 20),
+  new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.9 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// Left: Perspective camera
+const camP = new THREE.PerspectiveCamera(60, 1, 0.1, 200);
+camP.position.set(6, 6, 10);
+
+// Right: Orthographic camera
+const camO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 200);
+camO.position.set(0, 12, 0);
+camO.lookAt(0, 0, 0);
+
+// Controls only on perspective
+const controls = new OrbitControls(camP, renderer.domElement);
+controls.enableDamping = true;
+
+// Only left half responds to orbit
+renderer.domElement.addEventListener('mousemove', e => {
+  controls.enabled = e.clientX < innerWidth / 2;
+});
+
+function resize() {
+  renderer.setSize(innerWidth, innerHeight);
+  const hw = innerWidth / 2, h = innerHeight;
+  camP.aspect = hw / h;
+  camP.updateProjectionMatrix();
+  const aspect = hw / h;
+  const s = 7;
+  camO.left = -s * aspect; camO.right = s * aspect;
+  camO.top = s; camO.bottom = -s;
+  camO.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  scene.children.forEach(c => {
+    if (c.isMesh && c !== floor) { c.rotation.y = t * 0.4; }
+  });
+  controls.update();
+
+  const hw = innerWidth / 2, h = innerHeight;
+
+  // Left viewport — perspective
+  renderer.setViewport(0, 0, hw, h);
+  renderer.setScissor(0, 0, hw, h);
+  renderer.setScissorTest(true);
+  renderer.render(scene, camP);
+
+  // Right viewport — orthographic
+  renderer.setViewport(hw, 0, hw, h);
+  renderer.setScissor(hw, 0, hw, h);
+  renderer.setScissorTest(true);
+  renderer.render(scene, camO);
+});
+</script>
+</body>
+</html>

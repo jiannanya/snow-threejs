@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Procedural City</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #020308; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+label { color: #aaa; font-size: 12px; }
+input[type=range] { width: 90px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Procedural City — Random Buildings · Street Grid · Night Lights · Fly-over</div>
+<div id="controls">
+  <button id="btnRegen">Regenerate</button>
+  <button id="btnFly" class="active">Fly Mode</button>
+  <button id="btnNight" class="active">Night Mode</button>
+  <label>Density <input type="range" id="density" min="5" max="20" step="1" value="12"></label>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x020308);
+scene.fog = new THREE.FogExp2(0x020308, 0.012);
+const camera   = new THREE.PerspectiveCamera(65, innerWidth/innerHeight, 0.1, 300);
+camera.position.set(0, 25, 60);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+let nightMode = true;
+let autoFly = true;
+let gridDensity = 12;
+let cityGroup = new THREE.Group();
+scene.add(cityGroup);
+
+// Lights
+const ambientLight = new THREE.AmbientLight(0x111133, nightMode ? 0.5 : 2);
+scene.add(ambientLight);
+const moonLight = new THREE.DirectionalLight(0x8899cc, 0.4);
+moonLight.position.set(-20, 50, -20);
+scene.add(moonLight);
+
+function buildCity() {
+  // Clear previous
+  while (cityGroup.children.length) {
+    const c = cityGroup.children[0];
+    c.geometry?.dispose(); c.material?.dispose();
+    cityGroup.remove(c);
+  }
+
+  const SIZE = gridDensity;
+  const CELL = 5;
+  const TOTAL = SIZE * CELL;
+
+  // Ground (roads)
+  const groundMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.95 });
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(TOTAL+20, TOTAL+20), groundMat);
+  ground.rotation.x = -Math.PI/2;
+  ground.receiveShadow = true;
+  cityGroup.add(ground);
+
+  // Road lines
+  const roadMat = new THREE.LineBasicMaterial({ color: 0x334433 });
+  for (let i = 0; i <= SIZE; i++) {
+    const x = i * CELL - TOTAL/2;
+    const pts = [new THREE.Vector3(x, 0.01, -TOTAL/2), new THREE.Vector3(x, 0.01, TOTAL/2)];
+    cityGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), roadMat));
+    const pts2 = [new THREE.Vector3(-TOTAL/2, 0.01, x), new THREE.Vector3(TOTAL/2, 0.01, x)];
+    cityGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts2), roadMat));
+  }
+
+  // Buildings
+  const buildingColors = [0x223344,0x334455,0x1a2a3a,0x2a3a4a,0x3a2a1a,0x1a3a2a];
+  const windowColor = nightMode ? 0xffee88 : 0x88aacc;
+
+  for (let row = 0; row < SIZE; row++) {
+    for (let col = 0; col < SIZE; col++) {
+      if (Math.random() < 0.15) continue; // empty lot
+      const h = 1 + Math.random() * 20;
+      const w = 1.5 + Math.random() * 2;
+      const d = 1.5 + Math.random() * 2;
+      const x = (col - SIZE/2) * CELL + CELL/2 + (Math.random()-0.5);
+      const z = (row - SIZE/2) * CELL + CELL/2 + (Math.random()-0.5);
+
+      const bGeo = new THREE.BoxGeometry(w, h, d);
+      const bMat = new THREE.MeshStandardMaterial({
+        color: buildingColors[Math.floor(Math.random()*buildingColors.length)],
+        roughness: 0.7, metalness: 0.3,
+      });
+      const building = new THREE.Mesh(bGeo, bMat);
+      building.position.set(x, h/2, z);
+      building.castShadow = true;
+      building.receiveShadow = true;
+      cityGroup.add(building);
+
+      // Windows (emissive planes on side faces)
+      if (nightMode && h > 3) {
+        const wRows = Math.floor(h / 1.2);
+        for (let wr = 0; wr < wRows; wr++) {
+          if (Math.random() < 0.3) continue;
+          const wGeo = new THREE.PlaneGeometry(0.3, 0.4);
+          const wMat = new THREE.MeshBasicMaterial({ color: windowColor });
+          const win = new THREE.Mesh(wGeo, wMat);
+          win.position.set(x + w/2 + 0.01, wr*1.2 - h/2 + 1, z);
+          win.rotation.y = Math.PI/2;
+          cityGroup.add(win);
+        }
+      }
+    }
+  }
+
+  // Street lamps
+  for (let i = 0; i <= SIZE; i++) {
+    for (let j = 0; j <= SIZE; j += 2) {
+      const lx = (i - SIZE/2) * CELL;
+      const lz = (j - SIZE/2) * CELL;
+      const pLight = new THREE.PointLight(0xffcc66, nightMode ? 8 : 0, 12);
+      pLight.position.set(lx, 4, lz);
+      cityGroup.add(pLight);
+      // Lamp post visual
+      const post = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.05, 4, 4),
+        new THREE.MeshBasicMaterial({ color: 0x555555 })
+      );
+      post.position.set(lx, 2, lz);
+      cityGroup.add(post);
+    }
+  }
+}
+
+buildCity();
+
+document.getElementById('btnRegen').addEventListener('click', buildCity);
+document.getElementById('btnFly').addEventListener('click', e => {
+  autoFly = !autoFly;
+  controls.enabled = !autoFly;
+  e.currentTarget.classList.toggle('active', autoFly);
+});
+document.getElementById('btnNight').addEventListener('click', e => {
+  nightMode = !nightMode;
+  ambientLight.intensity = nightMode ? 0.5 : 2;
+  e.currentTarget.classList.toggle('active', nightMode);
+  buildCity();
+});
+document.getElementById('density').addEventListener('input', e => { gridDensity = +e.target.value; buildCity(); });
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  if (autoFly) {
+    const r = 45;
+    camera.position.x = Math.sin(t * 0.06) * r;
+    camera.position.z = Math.cos(t * 0.06) * r;
+    camera.position.y = 20 + Math.sin(t * 0.1) * 8;
+    camera.lookAt(0, 8, 0);
+  } else {
+    controls.update();
+  }
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

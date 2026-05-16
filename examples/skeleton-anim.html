@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Skeleton Animation</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a18; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Skeleton Animation — SkinnedMesh · Bone Hierarchy · Weight Painting</div>
+<div id="controls">
+  <button id="btnWave" class="active">Wave</button>
+  <button id="btnBend">Bend</button>
+  <button id="btnTwist">Twist</button>
+  <button id="btnWire">Wireframe</button>
+  <button id="btnBones" class="active">Show Skeleton</button>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls }  from 'three/addons/controls/OrbitControls.js';
+import { SkeletonHelper } from 'three/addons/helpers/SkeletonHelper.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a18);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 4, 12);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0x334466, 1));
+const dLight = new THREE.DirectionalLight(0xffffff, 2);
+dLight.position.set(5, 10, 8);
+scene.add(dLight);
+scene.add(new THREE.GridHelper(20, 20, 0x222244, 0x111133));
+
+// ─── Build SkinnedMesh cylinder with 5 bones ───────────────────────
+
+const SEGMENT_HEIGHT = 1;
+const SEGMENTS = 10;
+const HEIGHT = SEGMENT_HEIGHT * SEGMENTS;
+const HALF = HEIGHT / 2;
+const BONE_COUNT = SEGMENTS + 1;
+
+// Geometry: cylinder along Y axis
+const geo = new THREE.CylinderGeometry(0.4, 0.4, HEIGHT, 16, SEGMENTS, true);
+geo.translate(0, HALF, 0);
+
+const position = geo.attributes.position;
+const skinIndex  = [];
+const skinWeight = [];
+
+// Assign bone weights based on vertex Y position
+for (let i = 0; i < position.count; i++) {
+  const y = position.getY(i);
+  const boneIdx = Math.floor(y / SEGMENT_HEIGHT);
+  const clamped = Math.min(boneIdx, BONE_COUNT - 2);
+  const frac = (y - clamped * SEGMENT_HEIGHT) / SEGMENT_HEIGHT;
+  skinIndex.push(clamped, Math.min(clamped + 1, BONE_COUNT - 1), 0, 0);
+  skinWeight.push(1 - frac, frac, 0, 0);
+}
+geo.setAttribute('skinIndex',  new THREE.Uint16BufferAttribute(skinIndex, 4));
+geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeight, 4));
+
+// Create bone chain
+const bones = [];
+for (let i = 0; i < BONE_COUNT; i++) {
+  const bone = new THREE.Bone();
+  bone.position.y = i === 0 ? 0 : SEGMENT_HEIGHT;
+  bones.push(bone);
+  if (i > 0) bones[i - 1].add(bone);
+}
+const skeleton = new THREE.Skeleton(bones);
+
+// SkinnedMesh
+const mat = new THREE.MeshStandardMaterial({
+  color: 0x4488ff, roughness: 0.4, metalness: 0.3,
+  side: THREE.DoubleSide,
+});
+const skinnedMesh = new THREE.SkinnedMesh(geo, mat);
+skinnedMesh.add(bones[0]);
+skinnedMesh.bind(skeleton);
+scene.add(skinnedMesh);
+
+// Skeleton helper (shows bones as lines)
+const skeletonHelper = new SkeletonHelper(skinnedMesh);
+skeletonHelper.material.linewidth = 2;
+scene.add(skeletonHelper);
+
+let animMode = 'wave';
+let showWire = false;
+
+document.getElementById('btnWave') .addEventListener('click', () => { animMode = 'wave'; setActive('btnWave'); });
+document.getElementById('btnBend') .addEventListener('click', () => { animMode = 'bend'; setActive('btnBend'); });
+document.getElementById('btnTwist').addEventListener('click', () => { animMode = 'twist'; setActive('btnTwist'); });
+document.getElementById('btnWire') .addEventListener('click', e => {
+  showWire = !showWire; mat.wireframe = showWire;
+  e.currentTarget.classList.toggle('active', showWire);
+});
+document.getElementById('btnBones').addEventListener('click', e => {
+  skeletonHelper.visible = !skeletonHelper.visible;
+  e.currentTarget.classList.toggle('active', skeletonHelper.visible);
+});
+
+function setActive(id) {
+  ['btnWave','btnBend','btnTwist'].forEach(b => {
+    document.getElementById(b).classList.toggle('active', b === id);
+  });
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  bones.forEach((bone, i) => {
+    if (i === 0) { bone.rotation.set(0, 0, 0); return; }
+    const phase = (i / BONE_COUNT) * Math.PI;
+    if (animMode === 'wave') {
+      bone.rotation.z = Math.sin(t * 2 + phase) * 0.2;
+    } else if (animMode === 'bend') {
+      bone.rotation.z = Math.sin(t * 1.5) * 0.15 * (i / BONE_COUNT);
+    } else {
+      bone.rotation.y = Math.sin(t * 2 + phase) * 0.3;
+    }
+  });
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

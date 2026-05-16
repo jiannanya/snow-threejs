@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Wireframe Modes</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0a; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button:hover { background: rgba(255,255,255,.2); }
+button.active { background: rgba(80,200,120,.3); border-color: #50c878; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Wireframe — Solid · WireframeGeometry · EdgesGeometry | Drag to Rotate</div>
+<div id="controls">
+  <button id="btnSolid" class="active">Solid</button>
+  <button id="btnWire" class="active">WireframeGeometry</button>
+  <button id="btnEdge" class="active">EdgesGeometry</button>
+  <button id="btnAuto">Auto Rotate</button>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0a);
+const camera   = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 4, 18);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+const dLight = new THREE.DirectionalLight(0xffffff, 2);
+dLight.position.set(5, 10, 8);
+scene.add(dLight);
+
+// Define geometries to show
+const geoList = [
+  { geo: new THREE.TorusKnotGeometry(1.2, 0.35, 128, 16), pos: [-8, 0, 0], color: 0x4488ff },
+  { geo: new THREE.IcosahedronGeometry(1.5, 2),            pos: [ 0, 0, 0], color: 0xff6644 },
+  { geo: new THREE.CylinderGeometry(0.8, 0.8, 2.5, 32),   pos: [ 8, 0, 0], color: 0x44cc88 },
+];
+
+const solidMeshes    = [];
+const wireMeshes     = [];
+const edgeMeshes     = [];
+
+geoList.forEach(({ geo, pos, color }) => {
+  const [x, y, z] = pos;
+
+  // Solid mesh
+  const solid = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.3 }));
+  solid.position.set(x, y, z);
+  scene.add(solid);
+  solidMeshes.push(solid);
+
+  // WireframeGeometry — full triangulation wireframe
+  const wGeo = new THREE.WireframeGeometry(geo);
+  const wMat = new THREE.LineBasicMaterial({ color: 0x88ddff, transparent: true, opacity: 0.6 });
+  const wire = new THREE.LineSegments(wGeo, wMat);
+  wire.position.set(x, y, z);
+  scene.add(wire);
+  wireMeshes.push(wire);
+
+  // EdgesGeometry — silhouette edges only
+  const eGeo = new THREE.EdgesGeometry(geo, 15);
+  const eMat = new THREE.LineBasicMaterial({ color: 0xffdd44 });
+  const edge = new THREE.LineSegments(eGeo, eMat);
+  edge.position.set(x, y, z);
+  scene.add(edge);
+  edgeMeshes.push(edge);
+});
+
+let autoRotate = false;
+
+function toggle(btn, meshes) {
+  btn.classList.toggle('active');
+  const v = btn.classList.contains('active');
+  meshes.forEach(m => { m.visible = v; });
+}
+document.getElementById('btnSolid').addEventListener('click', e => toggle(e.currentTarget, solidMeshes));
+document.getElementById('btnWire') .addEventListener('click', e => toggle(e.currentTarget, wireMeshes));
+document.getElementById('btnEdge') .addEventListener('click', e => toggle(e.currentTarget, edgeMeshes));
+document.getElementById('btnAuto') .addEventListener('click', e => {
+  autoRotate = !autoRotate;
+  e.currentTarget.classList.toggle('active', autoRotate);
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  [...solidMeshes, ...wireMeshes, ...edgeMeshes].forEach((m, i) => {
+    m.rotation.y = t * 0.3 * (1 + (i % 3) * 0.1);
+    m.rotation.x = t * 0.1;
+  });
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

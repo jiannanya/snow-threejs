@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Transparency & Blending</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #111; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#labels { position: absolute; top: 55px; width: 100%; display: flex; justify-content: space-around;
+  pointer-events: none; }
+.lbl { color: #aaa; font-size: 11px; font-family: monospace; text-align: center; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Transparency & Blending — opacity · depthWrite · NormalBlending · AdditiveBlending</div>
+<div id="labels">
+  <div class="lbl">Opaque<br>No Alpha</div>
+  <div class="lbl">Transparent<br>opacity=0.5</div>
+  <div class="lbl">Normal<br>Blending</div>
+  <div class="lbl">Additive<br>Blending</div>
+  <div class="lbl">No depthWrite<br>Correct Sort</div>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
+const camera   = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 4, 20);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+const dLight = new THREE.DirectionalLight(0xffffff, 2);
+dLight.position.set(5, 10, 8);
+scene.add(dLight);
+
+const sGeo = new THREE.SphereGeometry(1.2, 32, 32);
+const bGeo = new THREE.BoxGeometry(1.8, 1.8, 1.8);
+
+// Demo setups: each shows a sphere behind a box to demonstrate blending behavior
+const demos = [
+  // 1. Opaque
+  { x: -8, backColor: 0xff4444, frontMat: { color: 0x4488ff } },
+  // 2. Transparent opacity
+  { x: -4, backColor: 0xff4444, frontMat: { color: 0x4488ff, transparent: true, opacity: 0.5 } },
+  // 3. NormalBlending
+  { x:  0, backColor: 0x22ff88, frontMat: { color: 0xaa44ff, transparent: true, opacity: 0.7, blending: THREE.NormalBlending } },
+  // 4. AdditiveBlending
+  { x:  4, backColor: 0x221122, frontMat: { color: 0xff4488, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false } },
+  // 5. depthWrite false — correct transparency sorting
+  { x:  8, backColor: 0x114488, frontMat: { color: 0xffaa22, transparent: true, opacity: 0.6, depthWrite: false } },
+];
+
+demos.forEach(({ x, backColor, frontMat }) => {
+  // Background sphere (always opaque)
+  const back = new THREE.Mesh(sGeo, new THREE.MeshStandardMaterial({ color: backColor }));
+  back.position.set(x, 0, -1.5);
+  scene.add(back);
+  // Front box with configured material
+  const front = new THREE.Mesh(bGeo, new THREE.MeshStandardMaterial(frontMat));
+  front.position.set(x, 0, 1.5);
+  scene.add(front);
+});
+
+// Floor grid
+scene.add(new THREE.GridHelper(30, 30, 0x333333, 0x222222));
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  scene.children.forEach(c => {
+    if (c.isMesh) { c.rotation.y = t * 0.4; c.rotation.x = t * 0.15; }
+  });
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

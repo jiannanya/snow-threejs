@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Axes & Debug Helpers</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #111; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button:hover { background: rgba(255,255,255,.2); }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Debug Helpers — AxesHelper · GridHelper · ArrowHelper · BoxHelper</div>
+<div id="controls">
+  <button id="btnAxes" class="active">AxesHelper</button>
+  <button id="btnGrid" class="active">GridHelper</button>
+  <button id="btnArrow" class="active">ArrowHelper</button>
+  <button id="btnBox" class="active">BoxHelper</button>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(8, 6, 10);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// Lights
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const dLight = new THREE.DirectionalLight(0xffffff, 1.5);
+dLight.position.set(5, 8, 5);
+scene.add(dLight);
+
+// AxesHelper — red=X, green=Y, blue=Z
+const axesHelper = new THREE.AxesHelper(5);
+scene.add(axesHelper);
+
+// GridHelper — ground plane grid
+const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+scene.add(gridHelper);
+
+// Objects with BoxHelpers
+const cubeGeo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+const positions = [[-3.5, 0.75, 0], [0, 0.75, -3.5], [3.5, 0.75, 0], [0, 0.75, 3.5]];
+const colors    = [0xff4444, 0x44ff44, 0x4488ff, 0xff8800];
+const boxes = [];
+positions.forEach(([x, y, z], i) => {
+  const mesh = new THREE.Mesh(cubeGeo, new THREE.MeshStandardMaterial({ color: colors[i] }));
+  mesh.position.set(x, y, z);
+  scene.add(mesh);
+  const boxHelper = new THREE.BoxHelper(mesh, 0xffff00);
+  scene.add(boxHelper);
+  boxes.push({ mesh, boxHelper });
+});
+
+// ArrowHelpers for cardinal directions
+const arrowDefs = [
+  { dir: new THREE.Vector3(1, 0, 0), color: 0xff2222 },
+  { dir: new THREE.Vector3(0, 1, 0), color: 0x22ff22 },
+  { dir: new THREE.Vector3(0, 0, 1), color: 0x2222ff },
+];
+const arrows = arrowDefs.map(({ dir, color }) => {
+  const a = new THREE.ArrowHelper(dir.normalize(), new THREE.Vector3(0, 0, 0), 3.5, color, 0.5, 0.3);
+  scene.add(a);
+  return a;
+});
+
+// Toggle buttons
+function toggleHelper(btn, ...objs) {
+  btn.classList.toggle('active');
+  objs.forEach(o => { o.visible = !o.visible; });
+}
+document.getElementById('btnAxes').addEventListener('click', e =>
+  toggleHelper(e.currentTarget, axesHelper));
+document.getElementById('btnGrid').addEventListener('click', e =>
+  toggleHelper(e.currentTarget, gridHelper));
+document.getElementById('btnArrow').addEventListener('click', e =>
+  toggleHelper(e.currentTarget, ...arrows));
+document.getElementById('btnBox').addEventListener('click', e =>
+  toggleHelper(e.currentTarget, ...boxes.map(b => b.boxHelper)));
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+renderer.setAnimationLoop(() => {
+  boxes.forEach(({ mesh, boxHelper }, i) => {
+    mesh.rotation.y += 0.005 * (i + 1);
+    boxHelper.update();
+  });
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

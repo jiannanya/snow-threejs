@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Vertex Colors</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a14; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Vertex Colors — Per-vertex color on BufferGeometry | Drag to Rotate</div>
+<div id="controls">
+  <button id="btnHSL" class="active">HSL Rainbow</button>
+  <button id="btnGrad">Gradient</button>
+  <button id="btnNoise">Noise</button>
+  <button id="btnWire">Wireframe</button>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a14);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 0, 7);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const dLight = new THREE.DirectionalLight(0xffffff, 1.5);
+dLight.position.set(5, 8, 5);
+scene.add(dLight);
+
+// Build sphere with vertex colors
+const segments = 64;
+const geo = new THREE.SphereGeometry(3, segments, segments);
+const count = geo.attributes.position.count;
+const colors = new Float32Array(count * 3);
+geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5 });
+const mesh = new THREE.Mesh(geo, mat);
+scene.add(mesh);
+
+// Helper: simple hash noise
+function hash(n) { return (Math.sin(n * 127.1 + 311.7) * 43758.5453) % 1; }
+
+function applyHSL() {
+  const pos = geo.attributes.position;
+  const col = geo.attributes.color;
+  const tmp = new THREE.Color();
+  for (let i = 0; i < count; i++) {
+    const phi = Math.atan2(pos.getY(i), pos.getX(i));
+    const theta = Math.acos(pos.getZ(i) / 3);
+    tmp.setHSL(((phi / (Math.PI * 2)) + 0.5 + theta / Math.PI * 0.5) % 1, 1, 0.5);
+    col.setXYZ(i, tmp.r, tmp.g, tmp.b);
+  }
+  col.needsUpdate = true;
+}
+
+function applyGradient() {
+  const pos = geo.attributes.position;
+  const col = geo.attributes.color;
+  const tmp = new THREE.Color();
+  for (let i = 0; i < count; i++) {
+    const t = (pos.getY(i) / 3 + 1) / 2; // 0 at bottom, 1 at top
+    tmp.lerpColors(new THREE.Color(0x0033ff), new THREE.Color(0xff8800), t);
+    col.setXYZ(i, tmp.r, tmp.g, tmp.b);
+  }
+  col.needsUpdate = true;
+}
+
+function applyNoise() {
+  const pos = geo.attributes.position;
+  const col = geo.attributes.color;
+  const tmp = new THREE.Color();
+  for (let i = 0; i < count; i++) {
+    const h = Math.abs(hash(i * 3.1 + 7.3));
+    tmp.setHSL(h, 0.9, 0.5 + Math.abs(hash(i * 7.7)) * 0.2);
+    col.setXYZ(i, tmp.r, tmp.g, tmp.b);
+  }
+  col.needsUpdate = true;
+}
+
+applyHSL(); // start with HSL
+
+document.getElementById('btnHSL')  .addEventListener('click', () => { applyHSL();      setActive('btnHSL'); });
+document.getElementById('btnGrad') .addEventListener('click', () => { applyGradient(); setActive('btnGrad'); });
+document.getElementById('btnNoise').addEventListener('click', () => { applyNoise();    setActive('btnNoise'); });
+document.getElementById('btnWire') .addEventListener('click', e => {
+  mat.wireframe = !mat.wireframe;
+  e.currentTarget.classList.toggle('active', mat.wireframe);
+});
+
+function setActive(id) {
+  ['btnHSL','btnGrad','btnNoise'].forEach(b => {
+    document.getElementById(b).classList.toggle('active', b === id);
+  });
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  mesh.rotation.y += 0.004;
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

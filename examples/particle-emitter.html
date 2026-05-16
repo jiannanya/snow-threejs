@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Particle Emitter</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #04040e; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+label { color: #aaa; font-size: 12px; }
+input[type=range] { width: 90px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Particle Emitter — Pool Recycling · Lifetime · Fade · Physics</div>
+<div id="controls">
+  <button id="btnFire" class="active">Fire</button>
+  <button id="btnSmoke">Smoke</button>
+  <button id="btnSpark">Sparks</button>
+  <button id="btnSnow">Snow</button>
+  <label>Rate <input type="range" id="rate" min="1" max="100" step="1" value="30"></label>
+  <label>Gravity <input type="range" id="gravity" min="-5" max="5" step="0.1" value="-2"></label>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x04040e);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 200);
+camera.position.set(0, 8, 20);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0x223344, 1));
+scene.add(new THREE.GridHelper(30, 30, 0x111133, 0x0d0d22));
+
+// ─── Particle pool ────────────────────────────────────────────────────
+const MAX_PARTICLES = 5000;
+const positions = new Float32Array(MAX_PARTICLES * 3);
+const colors    = new Float32Array(MAX_PARTICLES * 3);
+const sizes     = new Float32Array(MAX_PARTICLES);
+
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+pGeo.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
+pGeo.setAttribute('size',     new THREE.BufferAttribute(sizes, 1));
+
+const pMat = new THREE.ShaderMaterial({
+  vertexShader: `
+    attribute float size;
+    attribute vec3 color;
+    varying vec3 vColor;
+    void main() {
+      vColor = color;
+      vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+      gl_PointSize = size * (300.0 / -mvPos.z);
+      gl_Position = projectionMatrix * mvPos;
+    }
+  `,
+  fragmentShader: `
+    varying vec3 vColor;
+    void main() {
+      float d = length(gl_PointCoord - 0.5) * 2.0;
+      if (d > 1.0) discard;
+      float a = 1.0 - smoothstep(0.5, 1.0, d);
+      gl_FragColor = vec4(vColor, a);
+    }
+  `,
+  transparent: true, depthWrite: false,
+  blending: THREE.AdditiveBlending, vertexColors: true,
+});
+const pSystem = new THREE.Points(pGeo, pMat);
+scene.add(pSystem);
+
+// Particle pool
+const pool = Array.from({ length: MAX_PARTICLES }, () => ({
+  active: false, life: 0, maxLife: 1,
+  px: 0, py: 0, pz: 0,
+  vx: 0, vy: 0, vz: 0,
+  r: 1, g: 1, b: 1, size: 1,
+}));
+
+let emitMode = 'fire';
+let emitRate = 30;
+let gravity  = -2;
+let emitAccum = 0;
+
+const presets = {
+  fire: {
+    spawn: (p) => {
+      const a = Math.random() * Math.PI * 2, r = Math.random() * 0.5;
+      p.px = Math.cos(a)*r; p.py = 0; p.pz = Math.sin(a)*r;
+      p.vx = (Math.random()-0.5)*1; p.vy = 2 + Math.random()*3; p.vz = (Math.random()-0.5)*1;
+      p.maxLife = 0.5 + Math.random()*0.8;
+      p.size = 0.5 + Math.random() * 0.5;
+    },
+    color: (p, t) => {
+      p.r = 1; p.g = t * 0.4; p.b = 0;
+    },
+  },
+  smoke: {
+    spawn: (p) => {
+      const a = Math.random() * Math.PI * 2, r = Math.random() * 0.3;
+      p.px = Math.cos(a)*r; p.py = 0.5; p.pz = Math.sin(a)*r;
+      p.vx = (Math.random()-0.5)*0.5; p.vy = 0.5 + Math.random()*1; p.vz = (Math.random()-0.5)*0.5;
+      p.maxLife = 2 + Math.random()*2;
+      p.size = 0.3 + Math.random() * 0.5;
+    },
+    color: (p, t) => {
+      const v = 0.3 + t * 0.4;
+      p.r = v; p.g = v; p.b = v;
+    },
+  },
+  spark: {
+    spawn: (p) => {
+      const a = Math.random() * Math.PI * 2, el = (Math.random()-0.5)*Math.PI;
+      const s = 5 + Math.random()*5;
+      p.px = 0; p.py = 0; p.pz = 0;
+      p.vx = Math.cos(el)*Math.cos(a)*s; p.vy = Math.abs(Math.sin(el))*s; p.vz = Math.cos(el)*Math.sin(a)*s;
+      p.maxLife = 0.3 + Math.random()*0.5;
+      p.size = 0.2 + Math.random() * 0.2;
+    },
+    color: (p, t) => {
+      p.r = 1; p.g = 1 - t*0.5; p.b = t * 0.3;
+    },
+  },
+  snow: {
+    spawn: (p) => {
+      p.px = (Math.random()-0.5)*20; p.py = 10 + Math.random()*5; p.pz = (Math.random()-0.5)*20;
+      p.vx = (Math.random()-0.5)*0.5; p.vy = 0; p.vz = (Math.random()-0.5)*0.5;
+      p.maxLife = 4 + Math.random()*4;
+      p.size = 0.2 + Math.random() * 0.3;
+    },
+    color: (p, t) => {
+      p.r = 0.9; p.g = 0.95; p.b = 1;
+    },
+  },
+};
+
+function spawnParticle() {
+  const p = pool.find(x => !x.active);
+  if (!p) return;
+  p.active = true; p.life = 0;
+  presets[emitMode].spawn(p);
+}
+
+document.getElementById('btnFire') .addEventListener('click', e => { emitMode='fire';  setA('btnFire'); });
+document.getElementById('btnSmoke').addEventListener('click', e => { emitMode='smoke'; setA('btnSmoke'); });
+document.getElementById('btnSpark').addEventListener('click', e => { emitMode='spark'; setA('btnSpark'); });
+document.getElementById('btnSnow') .addEventListener('click', e => { emitMode='snow';  setA('btnSnow'); });
+function setA(id) { ['btnFire','btnSmoke','btnSpark','btnSnow'].forEach(b=>document.getElementById(b).classList.toggle('active',b===id)); }
+document.getElementById('rate')   .addEventListener('input', e => emitRate = +e.target.value);
+document.getElementById('gravity').addEventListener('input', e => gravity = +e.target.value);
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t  = clock.elapsedTime;
+
+  // Emit
+  emitAccum += emitRate * dt;
+  while (emitAccum >= 1) { spawnParticle(); emitAccum--; }
+
+  // Update
+  let idx = 0;
+  pool.forEach(p => {
+    if (!p.active) {
+      positions[idx*3] = positions[idx*3+1] = positions[idx*3+2] = 0;
+      colors[idx*3] = colors[idx*3+1] = colors[idx*3+2] = 0;
+      sizes[idx] = 0;
+    } else {
+      p.life += dt;
+      if (p.life >= p.maxLife) { p.active = false; idx++; return; }
+      const tNorm = p.life / p.maxLife;
+      p.vy += gravity * dt;
+      p.px += p.vx * dt; p.py += p.vy * dt; p.pz += p.vz * dt;
+      presets[emitMode].color(p, tNorm);
+      const fade = 1 - Math.pow(tNorm, 2);
+      positions[idx*3]   = p.px;
+      positions[idx*3+1] = p.py;
+      positions[idx*3+2] = p.pz;
+      colors[idx*3]   = p.r * fade;
+      colors[idx*3+1] = p.g * fade;
+      colors[idx*3+2] = p.b * fade;
+      sizes[idx] = p.size;
+    }
+    idx++;
+  });
+
+  pGeo.attributes.position.needsUpdate = true;
+  pGeo.attributes.color.needsUpdate    = true;
+  pGeo.attributes.size.needsUpdate     = true;
+
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

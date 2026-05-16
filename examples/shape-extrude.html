@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Shape Extrude</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0d0d1a; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(255,200,80,.3); border-color: #ffc850; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Shape Extrude — ShapeGeometry · ExtrudeGeometry · Bevel · Holes | Drag to Rotate</div>
+<div id="controls">
+  <button id="btnStar" class="active">Star</button>
+  <button id="btnHeart">Heart</button>
+  <button id="btnArrow">Arrow</button>
+  <button id="btnGear">Gear</button>
+  <button id="btnLetter">Letter</button>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x0d0d1a);
+const camera   = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 3, 12);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0x334466, 1));
+const dLight = new THREE.DirectionalLight(0xffffff, 2);
+dLight.position.set(5, 8, 8);
+dLight.castShadow = true;
+scene.add(dLight);
+
+scene.add(new THREE.GridHelper(20, 20, 0x222244, 0x111133));
+
+// Shape builders
+function makeStar(points = 5, outerR = 2, innerR = 0.9) {
+  const shape = new THREE.Shape();
+  for (let i = 0; i <= points * 2; i++) {
+    const angle = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
+    const r = i % 2 === 0 ? outerR : innerR;
+    i === 0 ? shape.moveTo(Math.cos(angle)*r, Math.sin(angle)*r)
+            : shape.lineTo(Math.cos(angle)*r, Math.sin(angle)*r);
+  }
+  shape.closePath();
+  return shape;
+}
+
+function makeHeart() {
+  const shape = new THREE.Shape();
+  shape.moveTo(0, 0.5);
+  shape.bezierCurveTo( 0,  1.5,  2,  1.5,  2,  0.5);
+  shape.bezierCurveTo( 2, -0.5,  0, -1.0,  0, -2.5);
+  shape.bezierCurveTo( 0, -1.0, -2, -0.5, -2,  0.5);
+  shape.bezierCurveTo(-2,  1.5,  0,  1.5,  0,  0.5);
+  return shape;
+}
+
+function makeArrow() {
+  const s = new THREE.Shape();
+  s.moveTo(0, 2); s.lineTo(1.2, 0); s.lineTo(0.5, 0);
+  s.lineTo(0.5, -2); s.lineTo(-0.5, -2); s.lineTo(-0.5, 0);
+  s.lineTo(-1.2, 0); s.closePath();
+  return s;
+}
+
+function makeGear(teeth = 8, outerR = 2, innerR = 1.5, holeR = 0.5) {
+  const s = new THREE.Shape();
+  const step = (Math.PI * 2) / (teeth * 2);
+  for (let i = 0; i < teeth * 2; i++) {
+    const angle = i * step - Math.PI / 2;
+    const r = i % 2 === 0 ? outerR : innerR;
+    const x = Math.cos(angle) * r, y = Math.sin(angle) * r;
+    i === 0 ? s.moveTo(x, y) : s.lineTo(x, y);
+  }
+  s.closePath();
+  // Center hole
+  const hole = new THREE.Path();
+  hole.absarc(0, 0, holeR, 0, Math.PI * 2, false);
+  s.holes.push(hole);
+  return s;
+}
+
+function makeLetter() {
+  const s = new THREE.Shape();
+  // Letter "T"
+  s.moveTo(-2, 1.5); s.lineTo(2, 1.5); s.lineTo(2, 2.5);
+  s.lineTo(-2, 2.5); s.closePath();
+  const stem = new THREE.Path();
+  stem.moveTo(-0.6, -2); stem.lineTo(0.6, -2);
+  stem.lineTo(0.6, 1.5); stem.lineTo(-0.6, 1.5); stem.closePath();
+  // combine as a compound
+  const compound = new THREE.Shape();
+  compound.moveTo(-2, 1.5); compound.lineTo(2, 1.5); compound.lineTo(2, 2.5);
+  compound.lineTo(-2, 2.5); compound.closePath();
+  return compound;
+}
+
+const shapes = {
+  Star:   { shape: makeStar(),   color: 0xffcc00 },
+  Heart:  { shape: makeHeart(),  color: 0xff2255 },
+  Arrow:  { shape: makeArrow(),  color: 0x44ff88 },
+  Gear:   { shape: makeGear(),   color: 0x88aacc },
+  Letter: { shape: makeLetter(), color: 0x88aaff },
+};
+
+const extrudeSettings = { depth: 0.8, bevelEnabled: true, bevelThickness: 0.15, bevelSize: 0.1, bevelSegments: 3 };
+
+let currentMesh = null;
+
+function showShape(name) {
+  if (currentMesh) { scene.remove(currentMesh); currentMesh.geometry.dispose(); }
+  const { shape, color } = shapes[name];
+  const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+  geo.center();
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.5, side: THREE.DoubleSide });
+  currentMesh = new THREE.Mesh(geo, mat);
+  currentMesh.castShadow = true;
+  currentMesh.position.y = 1.5;
+  scene.add(currentMesh);
+
+  Object.keys(shapes).forEach(k => {
+    document.getElementById('btn' + k).classList.toggle('active', k === name);
+  });
+}
+
+showShape('Star');
+document.getElementById('btnStar').addEventListener('click', () => showShape('Star'));
+document.getElementById('btnHeart').addEventListener('click', () => showShape('Heart'));
+document.getElementById('btnArrow').addEventListener('click', () => showShape('Arrow'));
+document.getElementById('btnGear').addEventListener('click', () => showShape('Gear'));
+document.getElementById('btnLetter').addEventListener('click', () => showShape('Letter'));
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  if (currentMesh) {
+    currentMesh.rotation.y += 0.008;
+    currentMesh.rotation.x = Math.sin(clock.getElapsedTime() * 0.3) * 0.2;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

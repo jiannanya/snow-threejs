@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Audio Visualizer</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #06060e; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#startBtn { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: rgba(80,200,255,.2); color: #88ccff; border: 2px solid #4488ff;
+  padding: 16px 40px; border-radius: 8px; cursor: pointer; font-size: 18px; font-family: monospace; }
+#startBtn:hover { background: rgba(80,200,255,.4); }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: none; gap: 8px; align-items: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+label { color: #aaa; font-size: 12px; }
+input[type=range] { width: 100px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Audio Visualizer — Web Audio API FFT → 3D Bar Chart</div>
+<button id="startBtn">Click to Start Microphone Visualizer</button>
+<div id="controls">
+  <button id="btnBar" class="active">Bars</button>
+  <button id="btnRing">Ring</button>
+  <label>Height Scale <input type="range" id="heightScale" min="0.01" max="0.2" step="0.005" value="0.06"></label>
+  <label>Sensitivity <input type="range" id="sensitivity" min="1" max="5" step="0.1" value="2"></label>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x06060e);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 12, 22);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 3, 0);
+
+scene.add(new THREE.AmbientLight(0x112244, 1));
+const dLight = new THREE.DirectionalLight(0xffffff, 1.5);
+dLight.position.set(5, 10, 5);
+scene.add(dLight);
+
+// Floor
+scene.add(new THREE.Mesh(
+  new THREE.PlaneGeometry(60, 60),
+  new THREE.MeshStandardMaterial({ color: 0x0a0a1a, roughness: 1 })
+).rotateX(-Math.PI / 2));
+scene.add(new THREE.GridHelper(60, 60, 0x111133, 0x0d0d22));
+
+const BAR_COUNT = 64;
+let mode = 'bars';
+let heightScale = 0.06;
+let sensitivity = 2;
+
+// Create bars
+const bars = [];
+const barGeo = new THREE.BoxGeometry(1, 1, 1);
+for (let i = 0; i < BAR_COUNT; i++) {
+  const hue = i / BAR_COUNT;
+  const mat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color().setHSL(hue, 1, 0.5),
+    emissive: new THREE.Color().setHSL(hue, 1, 0.2),
+    roughness: 0.3, metalness: 0.5,
+  });
+  const bar = new THREE.Mesh(barGeo, mat);
+  scene.add(bar);
+  bars.push(bar);
+}
+
+function positionBars(dataArray, t) {
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const val = (dataArray[i] || 0) * sensitivity;
+    const h = val * heightScale * 255 + 0.1;
+    const hue = (i / BAR_COUNT + t * 0.02) % 1;
+    bars[i].material.color.setHSL(hue, 1, 0.5);
+    bars[i].material.emissive.setHSL(hue, 1, 0.2 * (val / 255));
+
+    if (mode === 'bars') {
+      const x = (i - BAR_COUNT / 2) * 1.1;
+      bars[i].position.set(x, h / 2, 0);
+      bars[i].scale.set(0.9, h, 0.9);
+      bars[i].rotation.set(0, 0, 0);
+    } else {
+      const angle = (i / BAR_COUNT) * Math.PI * 2;
+      const r = 8;
+      bars[i].position.set(Math.cos(angle) * r, h / 2, Math.sin(angle) * r);
+      bars[i].scale.set(0.6, h, 0.6);
+      bars[i].rotation.y = -angle;
+    }
+  }
+}
+
+// Fake data for demo when no mic
+function fakeData(t) {
+  const arr = new Uint8Array(BAR_COUNT);
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const base = Math.sin(i * 0.3 + t * 2) * 0.5 + 0.5;
+    const peak = Math.sin(i * 1.2 - t * 3) * 0.3 + 0.3;
+    arr[i] = Math.floor((base * 0.6 + peak * 0.4) * 200 + Math.random() * 30);
+  }
+  return arr;
+}
+
+let analyser = null;
+let dataArray = null;
+
+document.getElementById('startBtn').addEventListener('click', async () => {
+  document.getElementById('startBtn').style.display = 'none';
+  document.getElementById('controls').style.display = 'flex';
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioCtx = new AudioContext();
+    const source = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = BAR_COUNT * 2;
+    source.connect(analyser);
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+  } catch {
+    // No mic — will use fake data
+    console.log('No mic, using demo data');
+  }
+});
+
+document.getElementById('btnBar').addEventListener('click', e => { mode = 'bars'; document.getElementById('btnBar').classList.add('active'); document.getElementById('btnRing').classList.remove('active'); });
+document.getElementById('btnRing').addEventListener('click', e => { mode = 'ring'; document.getElementById('btnRing').classList.add('active'); document.getElementById('btnBar').classList.remove('active'); });
+document.getElementById('heightScale').addEventListener('input', e => heightScale = +e.target.value);
+document.getElementById('sensitivity').addEventListener('input', e => sensitivity = +e.target.value);
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  let data;
+  if (analyser && dataArray) {
+    analyser.getByteFrequencyData(dataArray);
+    data = dataArray;
+  } else {
+    data = fakeData(t);
+  }
+  positionBars(data, t);
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

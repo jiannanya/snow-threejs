@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Clock & Easing</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a18; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#labels { position: absolute; bottom: 24px; width: 100%; display: flex; justify-content: space-around;
+  pointer-events: none; }
+.lbl { color: #88aacc; font-size: 11px; font-family: monospace; text-align: center; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Clock &amp; Easing — Linear · SineIn · CubicInOut · BounceOut · ElasticOut · BackOut</div>
+<div id="labels">
+  <div class="lbl">Linear</div>
+  <div class="lbl">Sine In</div>
+  <div class="lbl">Cubic InOut</div>
+  <div class="lbl">Bounce Out</div>
+  <div class="lbl">Elastic Out</div>
+  <div class="lbl">Back Out</div>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// Easing functions (0→1 input → 0→1 output)
+const ease = {
+  linear:     t => t,
+  sineIn:     t => 1 - Math.cos(t * Math.PI / 2),
+  cubicInOut: t => t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2,
+  bounceOut:  t => {
+    const n1 = 7.5625, d1 = 2.75;
+    if (t < 1/d1) return n1*t*t;
+    if (t < 2/d1) return n1*(t-=1.5/d1)*t+0.75;
+    if (t < 2.5/d1) return n1*(t-=2.25/d1)*t+0.9375;
+    return n1*(t-=2.625/d1)*t+0.984375;
+  },
+  elasticOut: t => {
+    if (t === 0 || t === 1) return t;
+    return Math.pow(2, -10*t) * Math.sin((t*10-0.75)*(2*Math.PI)/3) + 1;
+  },
+  backOut:    t => { const c1=1.70158, c3=c1+1; return 1+c3*(t-1)**3+c1*(t-1)**2; },
+};
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a18);
+const camera   = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 4, 22);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0x334466, 1));
+const dLight = new THREE.DirectionalLight(0xffffff, 2.5);
+dLight.position.set(4, 8, 6);
+scene.add(dLight);
+
+// Floor
+scene.add(new THREE.GridHelper(40, 40, 0x222244, 0x111133));
+
+const easeFns = Object.values(ease);
+const colors = [0xff4444, 0xff8833, 0x44ff88, 0x4488ff, 0xff44cc, 0xffcc44];
+const xs = [-7.5, -4.5, -1.5, 1.5, 4.5, 7.5];
+
+const cubes = easeFns.map((fn, i) => {
+  const geo = new THREE.BoxGeometry(1.8, 1.8, 1.8);
+  const mat = new THREE.MeshStandardMaterial({ color: colors[i], roughness: 0.3, metalness: 0.4 });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(xs[i], 0, 0);
+  scene.add(mesh);
+
+  // Ground marker
+  const markerGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.05, 16);
+  const marker = new THREE.Mesh(markerGeo, new THREE.MeshBasicMaterial({ color: colors[i] }));
+  marker.position.set(xs[i], 0.025, 0);
+  scene.add(marker);
+  return { mesh, easeFn: fn };
+});
+
+// Track lines showing the path
+xs.forEach((x, i) => {
+  const pts = [new THREE.Vector3(x, 0, 0), new THREE.Vector3(x, 6, 0)];
+  const line = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(pts),
+    new THREE.LineBasicMaterial({ color: colors[i], transparent: true, opacity: 0.2 })
+  );
+  scene.add(line);
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+const PERIOD = 2.0;
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  const phase = (t % PERIOD) / PERIOD; // 0 → 1 every PERIOD seconds
+  const pingPong = phase < 0.5 ? phase * 2 : (1 - phase) * 2; // 0→1→0
+
+  cubes.forEach(({ mesh, easeFn }) => {
+    mesh.position.y = easeFn(pingPong) * 5 + 0.9;
+    mesh.rotation.y = t * 0.5;
+  });
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

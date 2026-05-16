@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — 3D Text</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #05050f; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+</style>
+</head>
+<body>
+<div id="info">Three.js 3D Text — FontLoader · TextGeometry · Bevel · Per-letter Animation</div>
+<div id="controls">
+  <button id="btnNormal" class="active">Normal</button>
+  <button id="btnWave">Wave</button>
+  <button id="btnExplode">Explode</button>
+  <button id="btnMetal">Metallic</button>
+  <button id="btnNeon">Neon</button>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { FontLoader }    from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry }  from 'three/addons/geometries/TextGeometry.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x05050f);
+const camera   = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 3, 18);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0x334488, 0.8));
+const light1 = new THREE.PointLight(0x4488ff, 80, 40);
+light1.position.set(-5, 8, 6);
+scene.add(light1);
+const light2 = new THREE.PointLight(0xff8844, 60, 40);
+light2.position.set(5, -3, 6);
+scene.add(light2);
+
+let letterMeshes = [];
+let animMode = 'normal';
+
+const loader = new FontLoader();
+loader.load(
+  'https://cdn.jsdelivr.net/npm/three@0.167.1/examples/fonts/helvetiker_bold.typeface.json',
+  (font) => {
+    const words = ['THREE', '.JS', ' 3D'];
+    const colors = [0x4488ff, 0xff8844, 0x44ff88];
+
+    words.forEach((word, wi) => {
+      const letters = word.split('');
+      let xOffset = 0;
+      letters.forEach((ch, li) => {
+        const geo = new TextGeometry(ch, {
+          font, size: 1.2, depth: 0.4,
+          curveSegments: 8, bevelEnabled: true,
+          bevelThickness: 0.05, bevelSize: 0.04, bevelSegments: 3,
+        });
+        geo.computeBoundingBox();
+        const w = geo.boundingBox.max.x - geo.boundingBox.min.x;
+        const mat = new THREE.MeshStandardMaterial({
+          color: colors[wi], roughness: 0.2, metalness: 0.7,
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.x = xOffset - 6.5;
+        mesh.position.y = (wi - 1) * 2;
+        mesh.userData.baseX = mesh.position.x;
+        mesh.userData.baseY = mesh.position.y;
+        mesh.userData.baseZ = 0;
+        mesh.userData.idx = wi * 10 + li;
+        mesh.userData.color = colors[wi];
+        scene.add(mesh);
+        letterMeshes.push(mesh);
+        xOffset += w + 0.1;
+      });
+    });
+  }
+);
+
+function setMode(m) {
+  animMode = m;
+  ['btnNormal','btnWave','btnExplode','btnMetal','btnNeon'].forEach(id => {
+    document.getElementById(id).classList.toggle('active', id === 'btn' + m.charAt(0).toUpperCase() + m.slice(1));
+  });
+  letterMeshes.forEach(m => {
+    if (animMode === 'metal') {
+      m.material.metalness = 1; m.material.roughness = 0.1;
+      m.material.color.setHex(0xaaaaaa);
+    } else if (animMode === 'neon') {
+      m.material.metalness = 0; m.material.roughness = 0.5;
+      m.material.color.setHSL(m.userData.idx * 0.07 % 1, 1, 0.6);
+      m.material.emissive = new THREE.Color().setHSL(m.userData.idx * 0.07 % 1, 1, 0.3);
+    } else {
+      m.material.metalness = 0.7; m.material.roughness = 0.2;
+      m.material.color.setHex(m.userData.color);
+      m.material.emissive = new THREE.Color(0x000000);
+    }
+  });
+}
+
+document.getElementById('btnNormal') .addEventListener('click', () => setMode('normal'));
+document.getElementById('btnWave')   .addEventListener('click', () => setMode('wave'));
+document.getElementById('btnExplode').addEventListener('click', () => setMode('explode'));
+document.getElementById('btnMetal')  .addEventListener('click', () => setMode('metal'));
+document.getElementById('btnNeon')   .addEventListener('click', () => setMode('neon'));
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  letterMeshes.forEach((mesh) => {
+    const i = mesh.userData.idx;
+    mesh.position.x = mesh.userData.baseX;
+    mesh.position.y = mesh.userData.baseY;
+    mesh.position.z = mesh.userData.baseZ;
+    mesh.rotation.set(0, 0, 0);
+
+    if (animMode === 'wave') {
+      mesh.position.y += Math.sin(t * 2 + i * 0.4) * 0.4;
+      mesh.rotation.z = Math.sin(t * 1.5 + i * 0.3) * 0.1;
+    } else if (animMode === 'explode') {
+      const angle = (i / letterMeshes.length) * Math.PI * 2;
+      const r = Math.sin(t * 1.2) * 2;
+      mesh.position.x += Math.cos(angle) * r;
+      mesh.position.y += Math.sin(angle) * r;
+      mesh.position.z += Math.cos(t + i) * 1;
+      mesh.rotation.y = t * 0.5 + i * 0.2;
+    }
+  });
+
+  // Orbit colored lights
+  light1.position.set(Math.sin(t * 0.7) * 8, Math.cos(t * 0.5) * 4 + 4, 6);
+  light2.position.set(Math.cos(t * 0.9) * 8, Math.sin(t * 0.6) * 4 - 2, 5);
+
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

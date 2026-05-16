@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Procedural Terrain</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #060e14; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+label { color: #aaa; font-size: 12px; }
+input[type=range] { width: 90px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Procedural Terrain — Multi-octave Noise · Height Coloring · Flyover Camera</div>
+<div id="controls">
+  <button id="btnRegen">Regenerate</button>
+  <button id="btnWire">Wireframe</button>
+  <button id="btnFly" class="active">Auto Fly</button>
+  <label>Height <input type="range" id="heightAmt" min="1" max="10" step="0.5" value="4"></label>
+  <label>Octaves <input type="range" id="octaves" min="1" max="6" step="1" value="4"></label>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x060e14);
+scene.fog = new THREE.Fog(0x060e14, 40, 120);
+const camera   = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 12, 30);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 2, 0);
+
+scene.add(new THREE.AmbientLight(0x224466, 0.8));
+const sun = new THREE.DirectionalLight(0xfff8e0, 2.5);
+sun.position.set(30, 40, 20);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.far = 200;
+sun.shadow.camera.left = sun.shadow.camera.bottom = -60;
+sun.shadow.camera.right = sun.shadow.camera.top = 60;
+scene.add(sun);
+
+// Sky
+const skyGeo = new THREE.SphereGeometry(150, 16, 8);
+const skyMat = new THREE.ShaderMaterial({
+  vertexShader: `varying vec3 vPos; void main(){vPos=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader: `varying vec3 vPos; void main(){float t=clamp(vPos.y/150.,0.,1.); gl_FragColor=vec4(mix(vec3(.1,.25,.5),vec3(.03,.06,.14),t),1.);}`,
+  side: THREE.BackSide,
+});
+scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+// ─── Noise ─────────────────────────────────────────────────
+function fade(t) { return t*t*t*(t*(t*6-15)+10); }
+function lerp(a,b,t) { return a+t*(b-a); }
+const perm = new Uint8Array(512);
+function seedPerm(seed) {
+  const p = Array.from({length:256},(_,i)=>i);
+  for (let i=255;i>0;i--) { const j=Math.floor((seed=(seed*1664525+1013904223)&0xffffffff)/0x100000000*(i+1))%256; [p[i],p[j]]=[p[j],p[i]]; }
+  for (let i=0;i<512;i++) perm[i]=p[i&255];
+}
+function grad(hash,x,y) {
+  const h=hash&3;
+  const u=h<2?x:y, v=h<2?y:x;
+  return ((h&1)?-u:u)+((h&2)?-v:v);
+}
+function noise2(x,y) {
+  const X=Math.floor(x)&255, Y=Math.floor(y)&255;
+  const xf=x-Math.floor(x), yf=y-Math.floor(y);
+  const u=fade(xf), v=fade(yf);
+  const aa=perm[perm[X]+Y], ab=perm[perm[X]+Y+1],
+        ba=perm[perm[X+1]+Y], bb=perm[perm[X+1]+Y+1];
+  return lerp(lerp(grad(aa,xf,yf),grad(ba,xf-1,yf),u),
+              lerp(grad(ab,xf,yf-1),grad(bb,xf-1,yf-1),u),v);
+}
+function fbm(x,y,octaves) {
+  let v=0, amp=0.5, freq=1, max=0;
+  for(let i=0;i<octaves;i++){v+=noise2(x*freq,y*freq)*amp;max+=amp;amp*=0.5;freq*=2;}
+  return v/max;
+}
+
+let heightAmt = 4, octaveCnt = 4, showWire = false, autoFly = true;
+let terrain = null, terrainMat = null;
+
+function buildTerrain() {
+  if (terrain) { scene.remove(terrain); terrain.geometry.dispose(); }
+  seedPerm(Math.random() * 65535 | 0);
+  const RES = 128, SIZE = 80;
+  const geo = new THREE.PlaneGeometry(SIZE, SIZE, RES - 1, RES - 1);
+  geo.rotateX(-Math.PI / 2);
+  const pos = geo.attributes.position;
+  const colors = [];
+
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    const h = fbm(x / 20 + 0.5, z / 20 + 0.5, octaveCnt) * heightAmt * 2;
+    pos.setY(i, h);
+
+    // Height-based color
+    const t = (h + heightAmt) / (heightAmt * 2);
+    const c = new THREE.Color();
+    if (t < 0.1) c.set(0x0a2a5e);       // deep water
+    else if (t < 0.15) c.set(0x1a4a7e); // shallow water
+    else if (t < 0.22) c.set(0xd4b483); // beach
+    else if (t < 0.5) c.set(0x3d7a3d);  // grass
+    else if (t < 0.72) c.set(0x556644); // forest
+    else if (t < 0.88) c.set(0x888877); // rock
+    else c.set(0xeeeeee);               // snow
+    colors.push(c.r, c.g, c.b);
+  }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geo.computeVertexNormals();
+
+  terrainMat = new THREE.MeshStandardMaterial({
+    vertexColors: true, roughness: 0.85, metalness: 0,
+    wireframe: showWire,
+  });
+  terrain = new THREE.Mesh(geo, terrainMat);
+  terrain.receiveShadow = true;
+  scene.add(terrain);
+}
+
+buildTerrain();
+
+document.getElementById('btnRegen').addEventListener('click', buildTerrain);
+document.getElementById('btnWire').addEventListener('click', e => {
+  showWire = !showWire;
+  if (terrainMat) terrainMat.wireframe = showWire;
+  e.currentTarget.classList.toggle('active', showWire);
+});
+document.getElementById('btnFly').addEventListener('click', e => {
+  autoFly = !autoFly;
+  controls.enabled = !autoFly;
+  e.currentTarget.classList.toggle('active', autoFly);
+});
+document.getElementById('heightAmt').addEventListener('input', e => { heightAmt = +e.target.value; buildTerrain(); });
+document.getElementById('octaves').addEventListener('input', e => { octaveCnt = +e.target.value; buildTerrain(); });
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  if (autoFly) {
+    camera.position.x = Math.sin(t * 0.08) * 25;
+    camera.position.z = Math.cos(t * 0.08) * 25;
+    camera.position.y = 10 + Math.sin(t * 0.15) * 4;
+    camera.lookAt(0, 2, 0);
+  } else {
+    controls.update();
+  }
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

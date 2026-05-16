@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Normal Map</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0d0d1a; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+label { color: #aaa; font-size: 12px; }
+input[type=range] { width: 90px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Normal Map — Procedural NormalMap · Bump mapping · Surface Detail</div>
+<div id="controls">
+  <button id="btnBricks" class="active">Brick Wall</button>
+  <button id="btnScales">Scale Pattern</button>
+  <button id="btnCracked">Cracked Stone</button>
+  <button id="btnMetal">Metal Plate</button>
+  <button id="btnNormal">Show Normal</button>
+  <label>Light Angle <input type="range" id="angle" min="0" max="360" value="45"></label>
+  <label>Normal Scale <input type="range" id="nscale" min="0.1" max="5" step="0.1" value="2"></label>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x0d0d1a);
+const camera   = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 0, 6);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0x334466, 0.5));
+const movingLight = new THREE.PointLight(0xffffff, 80, 20);
+movingLight.position.set(3, 2, 4);
+scene.add(movingLight);
+// Visual for light
+const lightVis = new THREE.Mesh(
+  new THREE.SphereGeometry(0.12, 8, 8),
+  new THREE.MeshBasicMaterial({ color: 0xffffff })
+);
+scene.add(lightVis);
+
+// Create procedural textures via canvas
+function makeNormalMap(size, drawFn) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  drawFn(ctx, size);
+  return new THREE.CanvasTexture(canvas);
+}
+
+function makeDiffuseMap(size, drawFn) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  drawFn(ctx, size);
+  return new THREE.CanvasTexture(canvas);
+}
+
+// Brick wall normal map (approximated)
+function brickNormal(ctx, s) {
+  ctx.fillStyle = '#8080ff'; // flat normal (pointing up)
+  ctx.fillRect(0, 0, s, s);
+  const bw = s / 4, bh = s / 3;
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 5; col++) {
+      const ox = (row % 2 === 0 ? 0 : bw / 2) + col * bw;
+      const oy = row * bh;
+      // Mortar groove edges — darker normals pointing sideways
+      ctx.fillStyle = '#6060cc';
+      ctx.fillRect(ox, oy, bw, 3);
+      ctx.fillRect(ox, oy + bh - 3, bw, 3);
+      ctx.fillRect(ox, oy, 3, bh);
+      ctx.fillRect(ox + bw - 3, oy, 3, bh);
+    }
+  }
+}
+function brickDiffuse(ctx, s) {
+  ctx.fillStyle = '#773322';
+  ctx.fillRect(0, 0, s, s);
+  const bw = s / 4, bh = s / 3;
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 5; col++) {
+      const ox = (row % 2 === 0 ? 0 : bw / 2) + col * bw;
+      const oy = row * bh;
+      const shade = 0.8 + Math.random() * 0.4;
+      ctx.fillStyle = `rgba(${Math.round(120*shade)},${Math.round(60*shade)},${Math.round(40*shade)},1)`;
+      ctx.fillRect(ox + 3, oy + 3, bw - 6, bh - 6);
+    }
+  }
+  // mortar
+  ctx.fillStyle = '#aaaaaa';
+  for (let row = 0; row < 4; row++) { ctx.fillRect(0, row * bh, s, 3); }
+}
+
+// Scales normal map
+function scalesNormal(ctx, s) {
+  ctx.fillStyle = '#8080ff';
+  ctx.fillRect(0, 0, s, s);
+  const r = s / 6;
+  for (let row = 0; row < 7; row++) {
+    for (let col = 0; col < 7; col++) {
+      const x = col * r + (row % 2 ? r/2 : 0);
+      const y = row * r * 0.7;
+      // Each scale has a gradient from center outward
+      const grad = ctx.createRadialGradient(x, y + r*0.2, 0, x, y + r*0.2, r);
+      grad.addColorStop(0, '#a0a0ff');
+      grad.addColorStop(1, '#6060cc');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(x, y + r*0.3, r*0.55, r*0.65, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+}
+function scalesDiffuse(ctx, s) {
+  ctx.fillStyle = '#004466';
+  ctx.fillRect(0, 0, s, s);
+  const r = s / 6;
+  for (let row = 0; row < 7; row++) {
+    for (let col = 0; col < 7; col++) {
+      const x = col * r + (row % 2 ? r/2 : 0);
+      const y = row * r * 0.7;
+      const h = (row * 7 + col) / 49;
+      const grad = ctx.createRadialGradient(x, y, 0, x, y + r*0.4, r);
+      grad.addColorStop(0, `hsl(${160 + h*60},80%,50%)`);
+      grad.addColorStop(1, `hsl(${160 + h*60},80%,25%)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(x, y + r*0.3, r*0.55, r*0.65, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+}
+
+// Cracked stone
+function crackedNormal(ctx, s) {
+  ctx.fillStyle = '#8080ff';
+  ctx.fillRect(0, 0, s, s);
+  ctx.strokeStyle = '#5050bb';
+  ctx.lineWidth = 4;
+  for (let i = 0; i < 20; i++) {
+    ctx.beginPath();
+    ctx.moveTo(Math.random()*s, Math.random()*s);
+    ctx.lineTo(Math.random()*s, Math.random()*s);
+    ctx.stroke();
+  }
+}
+function crackedDiffuse(ctx, s) {
+  ctx.fillStyle = '#888888';
+  ctx.fillRect(0, 0, s, s);
+  // noise
+  for (let i = 0; i < 2000; i++) {
+    const v = Math.random() * 60;
+    ctx.fillStyle = `rgb(${120+v},${115+v},${110+v})`;
+    ctx.fillRect(Math.random()*s, Math.random()*s, 4, 4);
+  }
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 3;
+  for (let i = 0; i < 20; i++) {
+    ctx.beginPath();
+    ctx.moveTo(Math.random()*s, Math.random()*s);
+    ctx.lineTo(Math.random()*s, Math.random()*s);
+    ctx.stroke();
+  }
+}
+
+// Metal plate
+function metalNormal(ctx, s) {
+  ctx.fillStyle = '#8080ff';
+  ctx.fillRect(0, 0, s, s);
+  const ps = s/4;
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      ctx.strokeStyle = '#6060bb';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(col*ps+3, row*ps+3, ps-6, ps-6);
+      // Rivet bumps
+      const rx = col*ps + ps/2, ry = row*ps + ps/2;
+      const g = ctx.createRadialGradient(rx-2, ry-2, 0, rx, ry, 8);
+      g.addColorStop(0, '#b0b0ff');
+      g.addColorStop(1, '#8080ff');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(rx, ry, 8, 0, Math.PI*2); ctx.fill();
+    }
+  }
+}
+function metalDiffuse(ctx, s) {
+  ctx.fillStyle = '#556677';
+  ctx.fillRect(0, 0, s, s);
+  const ps = s/4;
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      ctx.strokeStyle = '#334455';
+      ctx.lineWidth = 5;
+      ctx.strokeRect(col*ps+3, row*ps+3, ps-6, ps-6);
+      ctx.fillStyle = '#778899';
+      ctx.beginPath();
+      ctx.arc(col*ps + ps/2, row*ps + ps/2, 7, 0, Math.PI*2); ctx.fill();
+    }
+  }
+}
+
+const textureSets = {
+  Bricks: { normal: brickNormal, diffuse: brickDiffuse },
+  Scales: { normal: scalesNormal, diffuse: scalesDiffuse },
+  Cracked: { normal: crackedNormal, diffuse: crackedDiffuse },
+  Metal: { normal: metalNormal, diffuse: metalDiffuse },
+};
+
+const geo = new THREE.SphereGeometry(2.5, 64, 64);
+const mat = new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0.2 });
+const mesh = new THREE.Mesh(geo, mat);
+scene.add(mesh);
+
+let showNormal = false;
+function applyTexture(name) {
+  const { normal, diffuse } = textureSets[name];
+  mat.map = makeDiffuseMap(512, diffuse);
+  mat.normalMap = makeNormalMap(512, normal);
+  mat.normalScale.set(2, 2);
+  mat.needsUpdate = true;
+  Object.keys(textureSets).forEach(k => {
+    document.getElementById('btn' + k).classList.toggle('active', k === name);
+  });
+}
+
+document.getElementById('btnBricks').addEventListener('click', () => applyTexture('Bricks'));
+document.getElementById('btnScales').addEventListener('click', () => applyTexture('Scales'));
+document.getElementById('btnCracked').addEventListener('click', () => applyTexture('Cracked'));
+document.getElementById('btnMetal').addEventListener('click', () => applyTexture('Metal'));
+document.getElementById('btnNormal').addEventListener('click', e => {
+  showNormal = !showNormal;
+  mat.normalMap = showNormal ? null : mat.normalMap;
+  e.currentTarget.classList.toggle('active', showNormal);
+  applyTexture('Bricks');
+});
+document.getElementById('nscale').addEventListener('input', e => {
+  const v = +e.target.value;
+  mat.normalScale.set(v, v);
+});
+
+applyTexture('Bricks');
+
+let lightAngle = 0.785;
+document.getElementById('angle').addEventListener('input', e => {
+  lightAngle = (+e.target.value) * Math.PI / 180;
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  const r = 5;
+  movingLight.position.set(Math.cos(lightAngle) * r, Math.sin(lightAngle) * r * 0.5 + 2, Math.sin(lightAngle) * r);
+  lightVis.position.copy(movingLight.position);
+  mesh.rotation.y += 0.003;
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

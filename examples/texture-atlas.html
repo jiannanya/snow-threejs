@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Texture Atlas</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #060612; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+label { color: #aaa; font-size: 12px; }
+input[type=range] { width: 90px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Texture Atlas — Sprite Sheet · UV Offset Animation · Billboard Sprites</div>
+<div id="controls">
+  <button id="btnExplosion" class="active">Explosion</button>
+  <button id="btnFire">Fire</button>
+  <button id="btnCoin">Coin Spin</button>
+  <button id="btnGrid">Show Atlas</button>
+  <label>Speed <input type="range" id="speed" min="1" max="30" step="1" value="12"></label>
+  <label>Count <input type="range" id="count" min="1" max="40" step="1" value="20"></label>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x060612);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 200);
+camera.position.set(0, 5, 18);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0x334466, 1.5));
+
+const COLS = 4, ROWS = 4, FRAMES = COLS * ROWS;
+const TILE = 64;
+const ATL_SIZE = TILE * COLS;
+
+// Create sprite-sheet textures via canvas
+function createAtlas(drawFrame) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = ATL_SIZE;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, ATL_SIZE, ATL_SIZE);
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const t = (r * COLS + c) / (FRAMES - 1);
+      drawFrame(ctx, c * TILE, r * TILE, TILE, t);
+    }
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+const atlases = {
+  explosion: createAtlas((ctx, x, y, size, t) => {
+    const r = size / 2, cx = x + r, cy = y + r;
+    const radius = r * (0.3 + t * 0.7);
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    grad.addColorStop(0, `rgba(255,255,200,${1-t})`);
+    grad.addColorStop(0.3, `rgba(255,${Math.round(200*(1-t))},0,${0.8*(1-t)})`);
+    grad.addColorStop(0.7, `rgba(200,50,0,${0.5*(1-t)})`);
+    grad.addColorStop(1, 'rgba(80,30,10,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI*2); ctx.fill();
+    // Sparks
+    for (let i = 0; i < 8; i++) {
+      const a = (i/8)*Math.PI*2, sr = radius * (0.8 + t * 0.5);
+      ctx.strokeStyle = `rgba(255,200,50,${0.8*(1-t)})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(a)*sr, cy + Math.sin(a)*sr);
+      ctx.stroke();
+    }
+  }),
+  fire: createAtlas((ctx, x, y, size, t) => {
+    const r = size / 2, cx = x + r, cy = y + size;
+    const h = size * (0.4 + Math.sin(t * Math.PI) * 0.6);
+    const grad = ctx.createLinearGradient(cx, cy, cx, cy - h);
+    grad.addColorStop(0, 'rgba(255,50,0,0.9)');
+    grad.addColorStop(0.4, `rgba(255,${Math.round(150+t*80)},0,0.7)`);
+    grad.addColorStop(0.8, 'rgba(255,200,50,0.4)');
+    grad.addColorStop(1, 'rgba(255,255,100,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(cx - r*0.5, cy);
+    ctx.quadraticCurveTo(cx + r*0.3*Math.sin(t*5), cy - h*0.5, cx + r*0.1, cy - h);
+    ctx.quadraticCurveTo(cx - r*0.3*Math.cos(t*4), cy - h*0.5, cx + r*0.5, cy);
+    ctx.closePath();
+    ctx.fill();
+  }),
+  coin: createAtlas((ctx, x, y, size, t) => {
+    const r = size / 2, cx = x + r, cy = y + r;
+    const scaleX = Math.abs(Math.cos(t * Math.PI * 2));
+    ctx.fillStyle = scaleX < 0.1 ? '#888833' : '#ffdd00';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r * 0.85 * scaleX + 0.5, r * 0.85, 0, 0, Math.PI*2);
+    ctx.fill();
+    if (scaleX > 0.3) {
+      ctx.fillStyle = 'rgba(255,255,180,0.6)';
+      ctx.beginPath();
+      ctx.ellipse(cx - r*0.2*scaleX, cy - r*0.2, r*0.2*scaleX, r*0.2, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }),
+};
+
+let currentAtlasKey = 'explosion';
+let spriteCount = 20;
+let animSpeed = 12;
+let showGrid = false;
+
+const sprites = [];
+
+function buildSprites() {
+  sprites.forEach(s => { scene.remove(s); s.geometry.dispose(); s.material.dispose(); });
+  sprites.length = 0;
+  const tex = atlases[currentAtlasKey];
+  for (let i = 0; i < spriteCount; i++) {
+    const mat = new THREE.MeshBasicMaterial({
+      map: tex.clone(), transparent: true, side: THREE.DoubleSide,
+      depthWrite: false, blending: THREE.AdditiveBlending,
+    });
+    mat.map.repeat.set(1/COLS, 1/ROWS);
+    mat.map.offset.set(0, 0);
+    const geo = new THREE.PlaneGeometry(2, 2);
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(
+      (Math.random()-0.5) * 20,
+      (Math.random()-0.5) * 8 + 3,
+      (Math.random()-0.5) * 15
+    );
+    mesh.userData.frameOffset = Math.random() * FRAMES;
+    scene.add(mesh);
+    sprites.push(mesh);
+  }
+}
+
+// Atlas preview plane
+const previewMat = new THREE.MeshBasicMaterial({ map: atlases[currentAtlasKey], transparent: true });
+const preview = new THREE.Mesh(new THREE.PlaneGeometry(6, 6), previewMat);
+preview.position.set(8, 3, 0);
+preview.visible = false;
+scene.add(preview);
+
+buildSprites();
+
+function setAtlas(key) {
+  currentAtlasKey = key;
+  buildSprites();
+  previewMat.map = atlases[key];
+  previewMat.needsUpdate = true;
+  ['btnExplosion','btnFire','btnCoin'].forEach(id => {
+    const k = id.replace('btn','').toLowerCase();
+    document.getElementById(id).classList.toggle('active', k === key);
+  });
+}
+
+document.getElementById('btnExplosion').addEventListener('click', () => setAtlas('explosion'));
+document.getElementById('btnFire')     .addEventListener('click', () => setAtlas('fire'));
+document.getElementById('btnCoin')     .addEventListener('click', () => setAtlas('coin'));
+document.getElementById('btnGrid')     .addEventListener('click', e => {
+  showGrid = !showGrid; preview.visible = showGrid;
+  e.currentTarget.classList.toggle('active', showGrid);
+});
+document.getElementById('speed').addEventListener('input', e => animSpeed = +e.target.value);
+document.getElementById('count').addEventListener('input', e => { spriteCount = +e.target.value; buildSprites(); });
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  sprites.forEach((s) => {
+    // Frame index from time
+    const frame = Math.floor((t * animSpeed + s.userData.frameOffset) % FRAMES);
+    const col = frame % COLS;
+    const row = Math.floor(frame / COLS);
+    s.material.map.offset.set(col / COLS, (ROWS - 1 - row) / ROWS);
+    // Billboard: always face camera
+    s.quaternion.copy(camera.quaternion);
+  });
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

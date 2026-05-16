@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — CSS2D Labels</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #060618; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+/* CSS2D label styles */
+.planet-label {
+  background: rgba(0, 20, 60, 0.85);
+  border: 1px solid #4488ff;
+  border-radius: 4px;
+  color: #88ccff;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 3px 8px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.planet-label .name  { font-weight: bold; font-size: 13px; }
+.planet-label .stats { color: #aaccee; font-size: 10px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js CSS2DRenderer — HTML Labels Attached to 3D Objects | Drag to Rotate</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls }   from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x060618);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 300);
+camera.position.set(0, 15, 35);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+// CSS2D renderer layered on top
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(innerWidth, innerHeight);
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.top = '0px';
+labelRenderer.domElement.style.pointerEvents = 'none';
+document.body.appendChild(labelRenderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.minDistance = 8;
+
+// Lights
+scene.add(new THREE.AmbientLight(0x112233, 1));
+scene.add(new THREE.PointLight(0xffeeaa, 150, 80)).position.set(0, 0, 0);
+
+// Stars
+const starGeo = new THREE.BufferGeometry();
+const sp = new Float32Array(6000);
+for (let i = 0; i < sp.length; i++) sp[i] = (Math.random() - 0.5) * 300;
+starGeo.setAttribute('position', new THREE.BufferAttribute(sp, 3));
+scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.3 })));
+
+// Planet data
+const planets = [
+  { name: 'Sun',     r: 3,    dist: 0,  color: 0xffcc00, emissive: 0xff8800, period: 0,   stats: 'Star · 1.99×10³⁰ kg' },
+  { name: 'Mercury', r: 0.4,  dist: 6,  color: 0x888888, emissive: 0,       period: 1.5, stats: 'Rocky · 57.9M km' },
+  { name: 'Venus',   r: 0.9,  dist: 9,  color: 0xeeaa44, emissive: 0,       period: 1.0, stats: 'Rocky · 108M km' },
+  { name: 'Earth',   r: 1.0,  dist: 13, color: 0x2277ff, emissive: 0,       period: 0.7, stats: '🌍 Rocky · 150M km' },
+  { name: 'Mars',    r: 0.6,  dist: 17, color: 0xff4422, emissive: 0,       period: 0.5, stats: 'Rocky · 228M km' },
+  { name: 'Jupiter', r: 2.2,  dist: 23, color: 0xcc8844, emissive: 0,       period: 0.25,stats: 'Gas Giant · 778M km' },
+];
+
+const pivots = [];
+planets.forEach(p => {
+  const pivot = new THREE.Group();
+  scene.add(pivot);
+
+  const geo = new THREE.SphereGeometry(p.r, 32, 32);
+  const mat = new THREE.MeshStandardMaterial({ color: p.color, emissive: p.emissive, roughness: 0.7 });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.x = p.dist;
+  pivot.add(mesh);
+
+  // CSS2D label
+  const div = document.createElement('div');
+  div.className = 'planet-label';
+  div.innerHTML = `<div class="name">${p.name}</div><div class="stats">${p.stats}</div>`;
+  const label = new CSS2DObject(div);
+  label.position.set(0, p.r + 0.5, 0);
+  mesh.add(label);
+
+  // Orbit ring
+  if (p.dist > 0) {
+    const ringGeo = new THREE.RingGeometry(p.dist - 0.05, p.dist + 0.05, 128);
+    ringGeo.rotateX(-Math.PI / 2);
+    scene.add(new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0x334455, side: THREE.DoubleSide })));
+  }
+
+  pivots.push({ pivot, speed: p.period });
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  labelRenderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  pivots.forEach(({ pivot, speed }) => { pivot.rotation.y = t * speed; });
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

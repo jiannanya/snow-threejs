@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Groups & Hierarchy</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #080818; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#legend { position: absolute; top: 50px; right: 20px; color: #aaa; font-size: 12px; line-height: 1.8; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Groups & Hierarchy — Parent-Child Transforms · Nested Rotation · Pivot Points</div>
+<div id="legend">
+  ☀️ Sun (root group)<br>
+  🌍 Earth (child of Sun)<br>
+  🌙 Moon (child of Earth)<br>
+  🪐 Saturn (child of Sun)<br>
+  💫 Ring (child of Saturn)
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x080818);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 500);
+camera.position.set(0, 20, 40);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// Ambient + point light at sun position
+scene.add(new THREE.AmbientLight(0x112244, 1));
+const sunLight = new THREE.PointLight(0xffcc44, 200, 100);
+scene.add(sunLight);
+
+// Stars background
+const starGeo = new THREE.BufferGeometry();
+const starPos = new Float32Array(3000);
+for (let i = 0; i < starPos.length; i++) starPos[i] = (Math.random() - 0.5) * 400;
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.3 })));
+
+function sphere(r, color, emissive = 0) {
+  return new THREE.Mesh(
+    new THREE.SphereGeometry(r, 32, 32),
+    new THREE.MeshStandardMaterial({ color, emissive, roughness: 0.8 })
+  );
+}
+
+// --- Solar System ---
+
+// Root group (whole system can be moved together)
+const solarSystem = new THREE.Group();
+scene.add(solarSystem);
+
+// Sun
+const sun = sphere(3, 0xffaa00, 0xffaa00);
+solarSystem.add(sun);
+
+// --- Earth system ---
+const earthOrbit = new THREE.Group();      // pivot at origin, child of solarSystem
+solarSystem.add(earthOrbit);
+
+const earth = sphere(1.0, 0x2277ff);
+earth.position.x = 11;                     // offset within earthOrbit group
+earthOrbit.add(earth);
+
+// Moon orbits Earth → nested group
+const moonOrbit = new THREE.Group();
+moonOrbit.position.x = 11;               // same offset as Earth so it rotates around Earth
+earthOrbit.add(moonOrbit);
+
+const moon = sphere(0.3, 0xaaaaaa);
+moon.position.x = 2.0;
+moonOrbit.add(moon);
+
+// Earth orbit ring visual
+const earthRingGeo = new THREE.RingGeometry(10.9, 11.1, 64);
+earthRingGeo.rotateX(-Math.PI / 2);
+scene.add(new THREE.Mesh(earthRingGeo, new THREE.MeshBasicMaterial({ color: 0x334455, side: THREE.DoubleSide })));
+
+// --- Saturn system ---
+const saturnOrbit = new THREE.Group();
+solarSystem.add(saturnOrbit);
+
+const saturn = sphere(1.8, 0xddaa66);
+saturn.position.x = 22;
+saturnOrbit.add(saturn);
+
+// Saturn ring (child of saturn → tilted with it)
+const ringGeo = new THREE.RingGeometry(2.5, 4.5, 64);
+ringGeo.rotateX(-Math.PI / 2);
+const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xbbaa88, side: THREE.DoubleSide, transparent: true, opacity: 0.7 }));
+ring.position.x = 22;
+saturnOrbit.add(ring);
+
+// Saturn orbit ring visual
+const satRingGeo = new THREE.RingGeometry(21.8, 22.2, 64);
+satRingGeo.rotateX(-Math.PI / 2);
+scene.add(new THREE.Mesh(satRingGeo, new THREE.MeshBasicMaterial({ color: 0x443322, side: THREE.DoubleSide })));
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  sun.rotation.y      = t * 0.2;
+  earthOrbit.rotation.y = t * 0.5;
+  moonOrbit.rotation.y  = t * 2.5;
+  earth.rotation.y    = t * 1.0;
+  saturnOrbit.rotation.y = t * 0.2;
+  saturn.rotation.y   = t * 0.8;
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

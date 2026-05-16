@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Simple Physics</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0a; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; align-items: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+label { color: #aaa; font-size: 12px; }
+input[type=range] { width: 100px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Manual Physics — Gravity · Elastic Bounce · Floor Collision</div>
+<div id="controls">
+  <button id="btnReset">Reset</button>
+  <label>Gravity <input type="range" id="gravity" min="1" max="30" value="9.8" step="0.5"></label>
+  <label>Restitution <input type="range" id="restitution" min="0.1" max="1" value="0.7" step="0.05"></label>
+  <label>Balls <input type="range" id="ballCount" min="3" max="20" value="10" step="1"></label>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0a);
+scene.fog = new THREE.Fog(0x0a0a0a, 30, 60);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 12, 20);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 4, 0);
+
+// Lights
+scene.add(new THREE.AmbientLight(0x334455, 1));
+const dLight = new THREE.DirectionalLight(0xffffff, 2);
+dLight.position.set(8, 20, 8);
+dLight.castShadow = true;
+dLight.shadow.mapSize.set(1024, 1024);
+dLight.shadow.camera.near = 1;
+dLight.shadow.camera.far  = 60;
+dLight.shadow.camera.left = dLight.shadow.camera.bottom = -15;
+dLight.shadow.camera.right = dLight.shadow.camera.top = 15;
+scene.add(dLight);
+
+// Floor
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(30, 30),
+  new THREE.MeshStandardMaterial({ color: 0x223344, roughness: 0.9 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// Walls (invisible boundaries)
+const BOUNDS = 7;
+const FLOOR_Y = 0;
+
+// Physics state
+let balls = [];
+let gravity = 9.8;
+let restitution = 0.7;
+
+const sGeo = new THREE.SphereGeometry(0.5, 16, 16);
+const colors = [0xff4444, 0xff8800, 0xffff44, 0x44ff88, 0x4488ff, 0xaa44ff, 0xff44aa, 0x44ffff];
+
+function spawnBalls(count) {
+  balls.forEach(b => { scene.remove(b.mesh); b.mesh.geometry.dispose(); b.mesh.material.dispose(); });
+  balls = [];
+  for (let i = 0; i < count; i++) {
+    const r = 0.3 + Math.random() * 0.4;
+    const geo = new THREE.SphereGeometry(r, 16, 16);
+    const mat = new THREE.MeshStandardMaterial({ color: colors[i % colors.length], roughness: 0.3, metalness: 0.4 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    const x = (Math.random() - 0.5) * BOUNDS * 1.5;
+    const z = (Math.random() - 0.5) * BOUNDS * 1.5;
+    const y = 5 + Math.random() * 12;
+    mesh.position.set(x, y, z);
+    scene.add(mesh);
+    balls.push({
+      mesh, r,
+      vel: new THREE.Vector3((Math.random()-0.5)*3, 0, (Math.random()-0.5)*3),
+    });
+  }
+}
+
+spawnBalls(10);
+
+document.getElementById('btnReset').addEventListener('click', () => spawnBalls(+document.getElementById('ballCount').value));
+document.getElementById('gravity').addEventListener('input', e => { gravity = +e.target.value; });
+document.getElementById('restitution').addEventListener('input', e => { restitution = +e.target.value; });
+document.getElementById('ballCount').addEventListener('input', e => spawnBalls(+e.target.value));
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  balls.forEach(b => {
+    // Apply gravity
+    b.vel.y -= gravity * dt;
+    b.mesh.position.addScaledVector(b.vel, dt);
+
+    // Floor collision
+    if (b.mesh.position.y < FLOOR_Y + b.r) {
+      b.mesh.position.y = FLOOR_Y + b.r;
+      b.vel.y = -b.vel.y * restitution;
+      b.vel.x *= 0.98; b.vel.z *= 0.98;
+    }
+    // Wall collisions
+    ['x','z'].forEach(ax => {
+      if (Math.abs(b.mesh.position[ax]) > BOUNDS) {
+        b.mesh.position[ax] = Math.sign(b.mesh.position[ax]) * BOUNDS;
+        b.vel[ax] *= -restitution;
+      }
+    });
+
+    b.mesh.rotation.x += b.vel.z * dt;
+    b.mesh.rotation.z -= b.vel.x * dt;
+  });
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

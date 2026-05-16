@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Multi Material</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #080814; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Multi Material — Per-face Materials · Material Groups · Dynamic Swap</div>
+<div id="controls">
+  <button id="btnBox" class="active">Box (6 faces)</button>
+  <button id="btnCyl">Cylinder (3 parts)</button>
+  <button id="btnCone">Cone (2 parts)</button>
+  <button id="btnSpin">Auto Rotate</button>
+  <button id="btnWire">Wireframe</button>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x080814);
+const camera   = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 200);
+camera.position.set(0, 3, 9);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0x334466, 1));
+const dLight = new THREE.DirectionalLight(0xffffff, 2);
+dLight.position.set(5, 10, 8);
+dLight.castShadow = true;
+scene.add(dLight);
+const pLight = new THREE.PointLight(0x8866ff, 40, 30);
+pLight.position.set(-5, 5, 5);
+scene.add(pLight);
+
+scene.add(new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 20),
+  new THREE.MeshStandardMaterial({ color: 0x111122, roughness: 0.9 })
+).rotateX(-Math.PI/2).translateY(-2));
+
+// Material factories
+function makeMat(color, roughness=0.4, metalness=0.5, textured=false) {
+  const mat = new THREE.MeshStandardMaterial({ color, roughness, metalness });
+  if (textured) {
+    // Canvas texture with label
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = new THREE.Color(color).getStyle();
+    ctx.fillRect(0, 0, 128, 128);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(4, 4, 120, 120);
+    mat.map = new THREE.CanvasTexture(canvas);
+  }
+  return mat;
+}
+
+// Face labels via canvas
+function makeLabeled(color, label) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = new THREE.Color(color).getStyle();
+  ctx.fillRect(0, 0, 256, 256);
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(6, 6, 244, 244);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 36px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, 128, 128);
+  const mat = new THREE.MeshStandardMaterial({
+    map: new THREE.CanvasTexture(canvas),
+    roughness: 0.4, metalness: 0.4,
+  });
+  return mat;
+}
+
+let currentMesh = null;
+let autoSpin = true;
+let showWire = false;
+
+function clearMesh() {
+  if (currentMesh) {
+    scene.remove(currentMesh);
+    currentMesh.geometry.dispose();
+    if (Array.isArray(currentMesh.material)) currentMesh.material.forEach(m => m.dispose());
+    else currentMesh.material.dispose();
+  }
+}
+
+function buildBox() {
+  clearMesh();
+  const geo = new THREE.BoxGeometry(3, 3, 3);
+  const materials = [
+    makeLabeled(0xff4444, '+X Right'),
+    makeLabeled(0x4444ff, '-X Left'),
+    makeLabeled(0x44ff44, '+Y Top'),
+    makeLabeled(0xffaa00, '-Y Bottom'),
+    makeLabeled(0xff44ff, '+Z Front'),
+    makeLabeled(0x44ffff, '-Z Back'),
+  ];
+  if (showWire) materials.forEach(m => { m.wireframe = true; });
+  currentMesh = new THREE.Mesh(geo, materials);
+  currentMesh.castShadow = true;
+  scene.add(currentMesh);
+}
+
+function buildCylinder() {
+  clearMesh();
+  // CylinderGeometry has 3 groups: top cap, bottom cap, side
+  const geo = new THREE.CylinderGeometry(1.5, 1.5, 4, 32, 1, false);
+  const materials = [
+    makeLabeled(0x66ccff, 'Side'),
+    makeLabeled(0xff8844, 'Top Cap'),
+    makeLabeled(0x88ff66, 'Bot Cap'),
+  ];
+  if (showWire) materials.forEach(m => { m.wireframe = true; });
+  currentMesh = new THREE.Mesh(geo, materials);
+  currentMesh.castShadow = true;
+  scene.add(currentMesh);
+}
+
+function buildCone() {
+  clearMesh();
+  const geo = new THREE.ConeGeometry(1.5, 4, 32, 1, false);
+  // ConeGeometry: 2 groups — side, bottom cap
+  const materials = [
+    makeLabeled(0xffcc00, 'Side'),
+    makeLabeled(0xff4488, 'Base Cap'),
+  ];
+  if (showWire) materials.forEach(m => { m.wireframe = true; });
+  currentMesh = new THREE.Mesh(geo, materials);
+  currentMesh.castShadow = true;
+  scene.add(currentMesh);
+}
+
+buildBox();
+
+document.getElementById('btnBox') .addEventListener('click', () => { buildBox();      setA('btnBox'); });
+document.getElementById('btnCyl') .addEventListener('click', () => { buildCylinder(); setA('btnCyl'); });
+document.getElementById('btnCone').addEventListener('click', () => { buildCone();     setA('btnCone'); });
+document.getElementById('btnSpin').addEventListener('click', e => {
+  autoSpin = !autoSpin; e.currentTarget.classList.toggle('active', autoSpin);
+});
+document.getElementById('btnWire').addEventListener('click', e => {
+  showWire = !showWire; e.currentTarget.classList.toggle('active', showWire);
+  if (currentMesh && Array.isArray(currentMesh.material)) {
+    currentMesh.material.forEach(m => m.wireframe = showWire);
+  }
+});
+
+function setA(id) {
+  ['btnBox','btnCyl','btnCone'].forEach(b => document.getElementById(b).classList.toggle('active', b===id));
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  if (autoSpin && currentMesh) {
+    currentMesh.rotation.y += 0.008;
+    currentMesh.rotation.x = Math.sin(t * 0.4) * 0.3;
+  }
+  pLight.position.x = Math.sin(t * 0.6) * 6;
+  pLight.position.z = Math.cos(t * 0.6) * 6;
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

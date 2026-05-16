@@ -74,6 +74,36 @@ Three.js (r184+) — JavaScript 3D library supporting WebGL and WebGPU renderers
 | [sprite-billboard.html](./examples/sprite-billboard.html) | Sprites and billboards | Intermediate |
 | [tsl-shader.html](./examples/tsl-shader.html) | TSL node-based shaders | Advanced |
 | [webgpu-basics.html](./examples/webgpu-basics.html) | WebGPU renderer | Advanced |
+| [axes-helpers.html](./examples/axes-helpers.html) | AxesHelper, GridHelper, ArrowHelper, BoxHelper | Beginner |
+| [wireframe-mode.html](./examples/wireframe-mode.html) | Wireframe, WireframeGeometry, EdgesGeometry | Beginner |
+| [groups-hierarchy.html](./examples/groups-hierarchy.html) | Group hierarchy, solar system parent-child | Beginner |
+| [vertex-colors.html](./examples/vertex-colors.html) | Per-vertex color painting on geometry | Beginner |
+| [transparent-blend.html](./examples/transparent-blend.html) | Transparency, blending modes, depthWrite | Beginner |
+| [clock-easing.html](./examples/clock-easing.html) | THREE.Clock, easing functions animation | Beginner |
+| [background-modes.html](./examples/background-modes.html) | Scene background: solid, gradient, CubeMap | Beginner |
+| [simple-physics.html](./examples/simple-physics.html) | Manual gravity, elastic bounce, wall collision | Beginner |
+| [multi-viewport.html](./examples/multi-viewport.html) | Split-screen scissor/viewport rendering | Beginner |
+| [css2d-labels.html](./examples/css2d-labels.html) | CSS2DRenderer planet labels in 3D space | Beginner |
+| [curve-path.html](./examples/curve-path.html) | CatmullRomCurve3, TubeGeometry, path following | Intermediate |
+| [shape-extrude.html](./examples/shape-extrude.html) | THREE.Shape, ExtrudeGeometry, bevel | Intermediate |
+| [lod.html](./examples/lod.html) | THREE.LOD level-of-detail with distance | Intermediate |
+| [cube-camera.html](./examples/cube-camera.html) | CubeCamera live environment reflections | Intermediate |
+| [water-surface.html](./examples/water-surface.html) | ShaderMaterial wave displacement, foam | Intermediate |
+| [outline-select.html](./examples/outline-select.html) | OutlinePass selection highlight via EffectComposer | Intermediate |
+| [render-target.html](./examples/render-target.html) | WebGLRenderTarget off-screen rendering | Intermediate |
+| [skeleton-anim.html](./examples/skeleton-anim.html) | SkinnedMesh, Bone hierarchy animation | Intermediate |
+| [normal-map.html](./examples/normal-map.html) | Procedural normal map textures, bump detail | Intermediate |
+| [audio-visualizer.html](./examples/audio-visualizer.html) | Web Audio API FFT → 3D bar visualization | Intermediate |
+| [procedural-terrain.html](./examples/procedural-terrain.html) | Multi-octave noise heightmap terrain | Advanced |
+| [text-3d.html](./examples/text-3d.html) | FontLoader, TextGeometry, 3D text animation | Advanced |
+| [fat-lines.html](./examples/fat-lines.html) | Line2, LineMaterial, configurable line width | Advanced |
+| [sky-atmosphere.html](./examples/sky-atmosphere.html) | Sky shader, sun position, water surface | Advanced |
+| [procedural-city.html](./examples/procedural-city.html) | Random procedural building city generation | Advanced |
+| [shader-extend.html](./examples/shader-extend.html) | onBeforeCompile GLSL injection into StandardMaterial | Advanced |
+| [depth-of-field.html](./examples/depth-of-field.html) | BokehPass depth of field, EffectComposer | Advanced |
+| [texture-atlas.html](./examples/texture-atlas.html) | Sprite sheet UV offset animation, billboards | Advanced |
+| [particle-emitter.html](./examples/particle-emitter.html) | Particle pool with lifetime, fade, physics | Advanced |
+| [multi-material.html](./examples/multi-material.html) | Per-face material groups on single mesh | Advanced |
 
 ## Procedure
 

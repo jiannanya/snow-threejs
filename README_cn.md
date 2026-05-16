@@ -904,6 +904,669 @@ const renderer = await createRenderer();
 
 ---
 
+## 新增示例（30个）
+
+### 新增初级示例
+
+<table>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/axes-helpers.html"><img src="./images/axes-helpers.png" width="100%"></a><br>
+<b>坐标轴辅助器</b><br><sub>AxesHelper · GridHelper · ArrowHelper · BoxHelper</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/wireframe-mode.html"><img src="./images/wireframe-mode.png" width="100%"></a><br>
+<b>线框模式</b><br><sub>实体 · WireframeGeometry · EdgesGeometry 对比</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/groups-hierarchy.html"><img src="./images/groups-hierarchy.png" width="100%"></a><br>
+<b>组与层级</b><br><sub>父子变换 · 太阳系层级结构</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/vertex-colors.html"><img src="./images/vertex-colors.png" width="100%"></a><br>
+<b>顶点颜色</b><br><sub>逐顶点着色 · HSL/渐变/噪声三种模式</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/transparent-blend.html"><img src="./images/transparent-blend.png" width="100%"></a><br>
+<b>透明与混合</b><br><sub>opacity · 普通混合 · 叠加混合</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/clock-easing.html"><img src="./images/clock-easing.png" width="100%"></a><br>
+<b>时钟与缓动</b><br><sub>THREE.Clock · 6种缓动函数对比</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/background-modes.html"><img src="./images/background-modes.png" width="100%"></a><br>
+<b>背景模式</b><br><sub>纯色 · 渐变纹理 · CubeMap 环境贴图</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/simple-physics.html"><img src="./images/simple-physics.png" width="100%"></a><br>
+<b>简单物理</b><br><sub>重力 · 弹性碰撞 · 墙壁边界检测</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/multi-viewport.html"><img src="./images/multi-viewport.png" width="100%"></a><br>
+<b>多视口渲染</b><br><sub>scissor 分屏 · 透视 + 正交双摄像机</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/css2d-labels.html"><img src="./images/css2d-labels.png" width="100%"></a><br>
+<b>CSS2D 标签</b><br><sub>CSS2DRenderer · 3D 投影 HTML 标签</sub>
+</td>
+<td></td><td></td>
+</tr>
+</table>
+
+### 新增中级示例
+
+<table>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/curve-path.html"><img src="./images/curve-path.png" width="100%"></a><br>
+<b>曲线路径</b><br><sub>CatmullRomCurve3 · TubeGeometry · 路径跟随</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/shape-extrude.html"><img src="./images/shape-extrude.png" width="100%"></a><br>
+<b>形状拉伸</b><br><sub>THREE.Shape · ExtrudeGeometry · 倒角</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/lod.html"><img src="./images/lod.png" width="100%"></a><br>
+<b>细节层次</b><br><sub>THREE.LOD · 按距离切换细节级别</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/cube-camera.html"><img src="./images/cube-camera.png" width="100%"></a><br>
+<b>立方体摄像机</b><br><sub>CubeCamera · 实时环境反射</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/water-surface.html"><img src="./images/water-surface.png" width="100%"></a><br>
+<b>水面效果</b><br><sub>ShaderMaterial 波浪位移 · 浪花泡沫</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/outline-select.html"><img src="./images/outline-select.png" width="100%"></a><br>
+<b>描边选择</b><br><sub>OutlinePass · 点击/悬停高亮描边</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/render-target.html"><img src="./images/render-target.png" width="100%"></a><br>
+<b>渲染目标</b><br><sub>WebGLRenderTarget · 离屏渲染安全摄像头</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/skeleton-anim.html"><img src="./images/skeleton-anim.png" width="100%"></a><br>
+<b>骨骼动画</b><br><sub>SkinnedMesh · 骨骼层级 · 蒙皮权重</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/normal-map.html"><img src="./images/normal-map.png" width="100%"></a><br>
+<b>法线贴图</b><br><sub>程序化法线贴图 · 表面凹凸细节</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/audio-visualizer.html"><img src="./images/audio-visualizer.png" width="100%"></a><br>
+<b>音频可视化</b><br><sub>Web Audio FFT → 3D 频谱柱状图</sub>
+</td>
+<td></td><td></td>
+</tr>
+</table>
+
+### 新增高级示例
+
+<table>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/procedural-terrain.html"><img src="./images/procedural-terrain.png" width="100%"></a><br>
+<b>程序化地形</b><br><sub>多倍频噪声高度图 · 按高度着色</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/text-3d.html"><img src="./images/text-3d.png" width="100%"></a><br>
+<b>3D 文字</b><br><sub>FontLoader · TextGeometry · 倒角 · 动画</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/fat-lines.html"><img src="./images/fat-lines.png" width="100%"></a><br>
+<b>粗线渲染</b><br><sub>Line2 · LineMaterial · 可调线宽 · 虚线</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/sky-atmosphere.html"><img src="./images/sky-atmosphere.png" width="100%"></a><br>
+<b>天空大气</b><br><sub>Sky 着色器 · 太阳位置 · 瑞利散射</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/procedural-city.html"><img src="./images/procedural-city.png" width="100%"></a><br>
+<b>程序化城市</b><br><sub>随机建筑 · 街道网格 · 夜晚灯光</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/shader-extend.html"><img src="./images/shader-extend.png" width="100%"></a><br>
+<b>着色器扩展</b><br><sub>onBeforeCompile · GLSL 注入 · 5种特效</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/depth-of-field.html"><img src="./images/depth-of-field.png" width="100%"></a><br>
+<b>景深效果</b><br><sub>BokehPass · EffectComposer · 焦距控制</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/texture-atlas.html"><img src="./images/texture-atlas.png" width="100%"></a><br>
+<b>纹理图集</b><br><sub>精灵表 · UV 偏移帧动画 · 广告牌</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/particle-emitter.html"><img src="./images/particle-emitter.png" width="100%"></a><br>
+<b>粒子发射器</b><br><sub>对象池复用 · 生命周期 · 淡出 · 物理</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/multi-material.html"><img src="./images/multi-material.png" width="100%"></a><br>
+<b>多材质</b><br><sub>单网格多材质分组 · 每面独立材质</sub>
+</td>
+<td></td><td></td>
+</tr>
+</table>
+
+---
+
+### 新增初级示例详解
+
+#### 21. 坐标轴辅助器 — Debug 助手
+
+演示 `AxesHelper`（RGB = XYZ 轴）、`GridHelper`、`ArrowHelper`（6个方向箭头）和 `BoxHelper`。可独立开关每种助手。
+
+```javascript
+const axes = new THREE.AxesHelper(5); // 红=X, 绿=Y, 蓝=Z
+scene.add(axes);
+const grid = new THREE.GridHelper(10, 10, 0x444444, 0x222222);
+scene.add(grid);
+const box = new THREE.BoxHelper(mesh, 0xffff00);
+scene.add(box);
+box.update(); // 每帧调用（如果网格移动）
+```
+
+---
+
+#### 22. 线框模式 — 几何体显示模式
+
+对比实体、`WireframeGeometry`（所有三角形边）和 `EdgesGeometry`（仅硬边）三种显示模式。
+
+```javascript
+// WireframeGeometry — 显示所有三角形边
+const wireGeo  = new THREE.WireframeGeometry(geo);
+const wireMesh = new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial());
+
+// EdgesGeometry — 仅显示折角大于阈值的边
+const edgeGeo  = new THREE.EdgesGeometry(geo);
+const edgeMesh = new THREE.LineSegments(edgeGeo, new THREE.LineBasicMaterial({ color: 0xffffff }));
+```
+
+---
+
+#### 23. 组与层级 — 父子变换继承
+
+太阳系演示：地球绕太阳公转（子 Group），月亮绕地球公转（孙 Group）。旋转沿层级向下传播。
+
+```javascript
+const solarSystem = new THREE.Group();
+const earthOrbit  = new THREE.Group(); // solarSystem 的子
+const moonOrbit   = new THREE.Group(); // earthOrbit 的子
+
+solarSystem.add(earthOrbit);
+earthOrbit.add(moonOrbit);
+scene.add(solarSystem);
+
+solarSystem.rotation.y += 0.01; // 影响所有后代
+earthOrbit.rotation.y  += 0.03; // 影响地球和月亮
+moonOrbit.rotation.y   += 0.07; // 仅影响月亮
+```
+
+---
+
+#### 24. 顶点颜色 — 逐顶点着色
+
+对高细分 `SphereGeometry` 每个顶点赋色。三种模式：HSL 彩虹、渐变、噪声。需 `vertexColors: true`。
+
+```javascript
+const colors = [];
+for (let i = 0; i < pos.count; i++) {
+  const c = new THREE.Color().setHSL(i / pos.count, 1, 0.5);
+  colors.push(c.r, c.g, c.b);
+}
+geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+const mat = new THREE.MeshStandardMaterial({ vertexColors: true });
+```
+
+---
+
+#### 25. 透明与混合 — 混合模式
+
+5对演示：不透明、`opacity: 0.5`、`NormalBlending`、`AdditiveBlending`、`depthWrite: false`。
+
+```javascript
+// 叠加混合（发光效果、火焰、粒子）
+const mat = new THREE.MeshStandardMaterial({
+  transparent: true, opacity: 0.7,
+  blending: THREE.AdditiveBlending, depthWrite: false,
+});
+```
+
+---
+
+#### 26. 时钟与缓动 — 动画时序
+
+用 `THREE.Clock` 实现 dt 时基动画。6个方块各用不同缓动：线性、正弦入、三次曲线、弹跳、弹性、回退。
+
+```javascript
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  const dt = clock.getDelta(); // 距上一帧的时间
+  // 各种缓动函数...
+});
+```
+
+---
+
+#### 27. 背景模式 — 场景背景
+
+切换4种背景：纯色、Canvas 渐变纹理、天空渐变（日落）、程序化 CubeMap 环境。
+
+```javascript
+// 渐变纹理背景
+const canvas = document.createElement('canvas');
+// ... 在 canvas 上绘制渐变 ...
+scene.background = new THREE.CanvasTexture(canvas);
+```
+
+---
+
+#### 28. 简单物理 — 手写物理模拟
+
+dt 时基重力积分，弹性地面碰撞，墙壁边界检测。无需外部物理引擎。
+
+```javascript
+const dt = clock.getDelta();
+ball.vy -= gravity * dt;       // 施加重力
+ball.py += ball.vy * dt;       // 积分位置
+
+if (ball.py < radius) {        // 地面碰撞
+  ball.py = radius;
+  ball.vy *= -restitution;     // 弹性反弹
+}
+```
+
+---
+
+#### 29. 多视口渲染 — 分屏渲染
+
+用 `renderer.setScissor()` + `renderer.setViewport()` 将同一场景渲染到两个视口。
+
+```javascript
+renderer.setScissorTest(true);
+renderer.setScissor(0, 0, w/2, h);
+renderer.setViewport(0, 0, w/2, h);
+renderer.render(scene, perspCamera);  // 左：透视摄像机
+
+renderer.setScissor(w/2, 0, w/2, h);
+renderer.setViewport(w/2, 0, w/2, h);
+renderer.render(scene, orthoCamera);  // 右：正交摄像机
+```
+
+---
+
+#### 30. CSS2D 标签 — 3D 投影 DOM 标签
+
+用 `CSS2DRenderer` 将 HTML 元素投影到 3D 空间，标签始终朝向摄像机。
+
+```javascript
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const label = new CSS2DObject(divElement);
+planet.add(label); // 标签跟随行星移动
+
+// 渲染循环中：
+labelRenderer.render(scene, camera);
+```
+
+---
+
+### 新增中级示例详解
+
+#### 31. 曲线路径 — 样条曲线路径跟随
+
+`CatmullRomCurve3` 闭合样条曲线 + `TubeGeometry` 管道，物体沿路径运动，粒子轨迹环形缓冲区。
+
+```javascript
+const curve = new THREE.CatmullRomCurve3(points, true); // closed=true
+const t = (clock.getElapsedTime() * 0.1) % 1;
+const pos     = curve.getPointAt(t);
+const tangent = curve.getTangentAt(t);
+traveler.position.copy(pos);
+traveler.lookAt(pos.clone().add(tangent)); // 朝向切线方向
+```
+
+---
+
+#### 32. 形状拉伸 — 2D 轮廓到 3D 几何
+
+用 `THREE.Shape` 绘制5种轮廓（星形、心形、箭头、齿轮+内孔、字母），`ExtrudeGeometry` 拉伸成3D。
+
+```javascript
+const shape = new THREE.Shape();
+// ... 用 moveTo / lineTo / bezierCurveTo 绘制轮廓 ...
+const geo = new THREE.ExtrudeGeometry(shape, {
+  depth: 0.4, bevelEnabled: true,
+  bevelThickness: 0.05, bevelSize: 0.04,
+});
+```
+
+---
+
+#### 33. 细节层次 — LOD
+
+`THREE.LOD` 按摄像机距离自动切换三档细节（64/16/4 段球体）。颜色变化直观显示当前 LOD 级别。
+
+```javascript
+const lod = new THREE.LOD();
+lod.addLevel(new THREE.Mesh(new THREE.SphereGeometry(1, 64, 64), mat), 0);  // 近距高精
+lod.addLevel(new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), mat), 8);  // 中距中精
+lod.addLevel(new THREE.Mesh(new THREE.SphereGeometry(1, 4,  4),  mat), 20); // 远距低精
+lod.update(camera); // 每帧调用
+```
+
+---
+
+#### 34. 立方体摄像机 — 实时反射
+
+`WebGLCubeRenderTarget` + `CubeCamera` 每帧更新，实现镀铬球体的实时环境反射。
+
+```javascript
+const cubeRT = new THREE.WebGLCubeRenderTarget(256);
+const cubeCamera = new THREE.CubeCamera(0.1, 100, cubeRT);
+const mat = new THREE.MeshStandardMaterial({ envMap: cubeRT.texture, metalness: 1, roughness: 0 });
+
+// 每帧：隐藏反射对象 → 更新 CubeCamera → 显示
+chromeSphere.visible = false;
+cubeCamera.update(renderer, scene);
+chromeSphere.visible = true;
+```
+
+---
+
+#### 35. 水面效果 — Shader 波浪位移
+
+`ShaderMaterial` 顶点着色器中叠加多个正弦波位移，实现水面效果。无需外部 Water 插件。
+
+```javascript
+// 顶点着色器中的波浪叠加
+newPos.y += sin(position.x * 0.5 + uTime) * 0.4
+          + sin(position.z * 0.3 + uTime * 1.3) * 0.3
+          + sin((position.x + position.z) * 0.4 + uTime * 0.8) * 0.2;
+```
+
+---
+
+#### 36. 描边选择 — 后处理选中高亮
+
+`OutlinePass` 高亮选中对象轮廓。点击切换蓝色选中描边，悬停显示黄色预览描边。
+
+```javascript
+import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
+const outlinePass = new OutlinePass(new THREE.Vector2(w, h), scene, camera);
+outlinePass.visibleEdgeColor.set(0x4488ff); // 蓝色=已选中
+composer.addPass(outlinePass);
+outlinePass.selectedObjects = [clickedMesh]; // 点击时更新
+```
+
+---
+
+#### 37. 渲染目标 — 离屏渲染
+
+`WebGLRenderTarget` 将场景从第二个摄像机渲染到纹理，显示在场景内的"监视器"平面上。
+
+```javascript
+const rt = new THREE.WebGLRenderTarget(512, 512);
+const monitor = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: rt.texture }));
+
+// 渲染循环：先渲染到 RT，再渲染主场景
+renderer.setRenderTarget(rt);
+renderer.render(scene, secCamera);
+renderer.setRenderTarget(null);
+renderer.render(scene, camera);
+```
+
+---
+
+#### 38. 骨骼动画 — SkinnedMesh
+
+手动构建骨骼链，蒙皮权重按顶点 Y 坐标分配。用正弦波驱动骨骼旋转，实现挥手/弯曲/扭转。
+
+```javascript
+const skeleton = new THREE.Skeleton(bones);
+const skinnedMesh = new THREE.SkinnedMesh(geo, mat);
+skinnedMesh.bind(skeleton);
+
+// 每帧驱动骨骼
+bones.forEach((bone, i) => {
+  bone.rotation.z = Math.sin(t * 2 + i * 0.4) * 0.2;
+});
+```
+
+---
+
+#### 39. 法线贴图 — 表面凹凸细节
+
+用 Canvas API 程序化生成法线贴图（砖墙/鱼鳞/裂石/金属板），动态移动灯光揭示表面细节。
+
+```javascript
+// Canvas 生成法线贴图（蓝色=#8080ff 表示垂直法线）
+ctx.fillStyle = '#8080ff'; // 平面法线
+ctx.fillRect(0, 0, size, size);
+// 用不同颜色绘制沟槽、凸起...
+material.normalMap = new THREE.CanvasTexture(canvas);
+material.normalScale.set(2, 2); // 强度
+```
+
+---
+
+#### 40. 音频可视化 — FFT 3D 柱状图
+
+`AnalyserNode` 每帧获取 FFT 频谱数据，驱动3D柱形高度。支持柱状/圆环两种布局，无麦克风时自动演示。
+
+```javascript
+const analyser = audioCtx.createAnalyser();
+analyser.fftSize = 128; // 64个频率桶
+const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+// 每帧：
+analyser.getByteFrequencyData(dataArray);
+bars.forEach((bar, i) => { bar.scale.y = dataArray[i] * scale; });
+```
+
+---
+
+### 新增高级示例详解
+
+#### 41. 程序化地形 — 噪声高度图
+
+多倍频 fBm 噪声位移128×128平面几何体，顶点按高度着色（水/沙滩/草地/森林/岩石/雪地）。
+
+```javascript
+function fbm(x, y, octaves) {
+  let v=0, amp=0.5, freq=1, max=0;
+  for (let i=0; i<octaves; i++) {
+    v += noise2(x*freq, y*freq) * amp;
+    max += amp; amp *= 0.5; freq *= 2;
+  }
+  return v / max;
+}
+const h = fbm(x/20, z/20, 4) * heightScale;
+pos.setY(i, h);
+```
+
+---
+
+#### 42. 3D 文字 — FontLoader & TextGeometry
+
+加载 helvetiker_bold 字体，用 `TextGeometry` 创建单个字母网格并添加倒角。支持正常/波浪/爆炸三种动画。
+
+```javascript
+import { FontLoader }   from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+loader.load(fontUrl, font => {
+  const geo = new TextGeometry('A', {
+    font, size: 1.2, depth: 0.4,
+    bevelEnabled: true, bevelThickness: 0.05,
+  });
+});
+```
+
+---
+
+#### 43. 粗线渲染 — Line2 / LineMaterial
+
+`LineMaterial` 支持任意像素宽度（原生 WebGL 线固定1px）。支持顶点颜色、虚线，`resolution` 参数必须设置。
+
+```javascript
+import { Line2 }        from 'three/addons/lines/Line2.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+
+const mat = new LineMaterial({
+  linewidth: 4, vertexColors: true,
+  resolution: new THREE.Vector2(innerWidth, innerHeight), // 必须！
+});
+const line = new Line2(geo, mat);
+line.computeLineDistances(); // 虚线需要
+```
+
+---
+
+#### 44. 天空大气 — Sky 着色器
+
+`Sky` 插件实现瑞利/米氏散射大气，可调太阳仰角/方位角/浑浊度，配合 `Water` 实现完整室外场景。
+
+```javascript
+import { Sky } from 'three/addons/objects/Sky.js';
+const sky = new Sky();
+sky.scale.setScalar(450000);
+scene.add(sky);
+
+const phi   = THREE.MathUtils.degToRad(90 - elevation);
+const theta = THREE.MathUtils.degToRad(azimuth);
+sky.material.uniforms.sunPosition.value.setFromSphericalCoords(1, phi, theta);
+```
+
+---
+
+#### 45. 程序化城市 — 随机建筑群
+
+Math.random() 网格随机生成不同高度/颜色建筑，街道线条，点光源路灯，夜间窗户灯，绕飞摄像机。
+
+```javascript
+for (let row = 0; row < SIZE; row++) {
+  for (let col = 0; col < SIZE; col++) {
+    if (Math.random() < 0.15) continue; // 空地
+    const h = 1 + Math.random() * 20;
+    const building = new THREE.Mesh(
+      new THREE.BoxGeometry(w, h, d),
+      new THREE.MeshStandardMaterial({ color: randomColor })
+    );
+    building.position.set(x, h/2, z);
+    scene.add(building);
+  }
+}
+```
+
+---
+
+#### 46. 着色器扩展 — onBeforeCompile
+
+通过 `onBeforeCompile` 向 `MeshStandardMaterial` 注入自定义 GLSL。5种特效：UV 波纹/噪声溶解/彩虹着色/故障/X射线。
+
+```javascript
+material.onBeforeCompile = (shader) => {
+  shader.uniforms.uTime = { value: 0 };
+  shader.fragmentShader = 'uniform float uTime;\n' + shader.fragmentShader;
+  shader.fragmentShader = shader.fragmentShader.replace(
+    'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
+    `// 在标准输出之后注入自定义 GLSL
+     gl_FragColor = vec4( outgoingLight * customEffect, diffuseColor.a );`
+  );
+};
+```
+
+---
+
+#### 47. 景深效果 — BokehPass
+
+`BokehPass` 实现摄像机镜头景深模糊，可调焦距/光圈/最大模糊量，不同 Z 深度的物体模糊程度不同。
+
+```javascript
+import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+const bokehPass = new BokehPass(scene, camera, { focus: 10, aperture: 0.00015, maxblur: 0.006 });
+composer.addPass(bokehPass);
+// 实时更新参数：
+bokehPass.uniforms.focus.value    = sliderValue;
+bokehPass.uniforms.aperture.value = 0.0002;
+```
+
+---
+
+#### 48. 纹理图集 — 精灵表帧动画
+
+Canvas 程序化生成4×4精灵表（爆炸/火焰/金币旋转），每帧更新 UV `offset` 切换帧。广告牌始终朝向摄像机。
+
+```javascript
+mat.map.repeat.set(1/COLS, 1/ROWS); // 单帧大小
+// 每帧切换 UV 偏移
+const frame = Math.floor((t * fps + offset) % FRAMES);
+const col = frame % COLS, row = Math.floor(frame / COLS);
+mat.map.offset.set(col / COLS, (ROWS-1-row) / ROWS);
+sprite.quaternion.copy(camera.quaternion); // 广告牌朝向
+```
+
+---
+
+#### 49. 粒子发射器 — 对象池模式
+
+固定大小粒子池，死亡粒子原地复用（无 GC 压力）。支持火焰/烟雾/火花/雪花4种预设，可调发射率和重力。
+
+```javascript
+const pool = Array.from({ length: MAX }, () => ({ active: false, life: 0 }));
+
+function spawnParticle() {
+  const p = pool.find(x => !x.active); // 复用死亡粒子
+  if (!p) return; // 池已满，跳过
+  p.active = true; p.life = 0;
+  p.vy = 2 + Math.random() * 3;
+}
+
+// 每帧更新
+pool.forEach(p => {
+  if (!p.active) return;
+  p.vy += gravity * dt; p.py += p.vy * dt;
+  if (p.life >= p.maxLife) p.active = false; // 回收
+});
+```
+
+---
+
+#### 50. 多材质 — 每面独立材质
+
+单个 `Mesh` 接受材质数组，每个 Group 对应一个材质。`BoxGeometry` 6面、`CylinderGeometry` 3部分、`ConeGeometry` 2部分均支持。
+
+```javascript
+const materials = [
+  new THREE.MeshStandardMaterial({ color: 0xff4444 }), // +X 右面
+  new THREE.MeshStandardMaterial({ color: 0x4444ff }), // -X 左面
+  new THREE.MeshStandardMaterial({ color: 0x44ff44 }), // +Y 顶面
+  new THREE.MeshStandardMaterial({ color: 0xffaa00 }), // -Y 底面
+  new THREE.MeshStandardMaterial({ color: 0xff44ff }), // +Z 前面
+  new THREE.MeshStandardMaterial({ color: 0x44ffff }), // -Z 后面
+];
+const mesh = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), materials);
+```
+
+---
+
 ## 参考文档
 
 | 文档 | 内容 |

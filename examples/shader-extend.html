@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Shader Extend</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #080810; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Shader Extend — onBeforeCompile · GLSL Injection · MeshStandardMaterial</div>
+<div id="controls">
+  <button id="btnRipple" class="active">Ripple UV</button>
+  <button id="btnNoise">Noise Dissolve</button>
+  <button id="btnRainbow">Rainbow Tint</button>
+  <button id="btnGlitch">Glitch</button>
+  <button id="btnXray">X-Ray</button>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x080810);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 200);
+camera.position.set(0, 2, 8);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0x334466, 1));
+const dLight = new THREE.DirectionalLight(0xffffff, 2);
+dLight.position.set(5, 8, 5);
+scene.add(dLight);
+const pLight = new THREE.PointLight(0x8844ff, 30, 20);
+pLight.position.set(-4, 3, 4);
+scene.add(pLight);
+
+// Shared time uniform
+const timeUniforms = { uTime: { value: 0 } };
+
+function buildMaterial(mode) {
+  const mat = new THREE.MeshStandardMaterial({
+    color: 0x4488cc, roughness: 0.4, metalness: 0.3,
+  });
+  mat.userData.mode = mode;
+
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = timeUniforms.uTime;
+    // Add uniform declaration
+    shader.vertexShader = 'uniform float uTime;\n' + shader.vertexShader;
+    shader.fragmentShader = 'uniform float uTime;\n' + shader.fragmentShader;
+
+    if (mode === 'ripple') {
+      // UV ripple distortion in vertex
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <uv_vertex>',
+        `#include <uv_vertex>
+         vMapUv = vMapUv + vec2(sin(vMapUv.y * 10.0 + uTime * 2.0) * 0.05, 0.0);`
+      );
+    } else if (mode === 'noise') {
+      // Dissolve by noise threshold in fragment
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'void main() {',
+        `float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+         float noise2(vec2 p){vec2 i=floor(p);vec2 f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+         void main() {`
+      );
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
+        `float n=noise2(vMapUv*6.0+uTime*0.5);
+         if(n < 0.4+sin(uTime)*0.3) discard;
+         gl_FragColor = vec4( outgoingLight, diffuseColor.a );`
+      );
+    } else if (mode === 'rainbow') {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
+        `vec3 rainbow=vec3(sin(uTime+vMapUv.y*8.0)*0.5+0.5, sin(uTime+vMapUv.y*8.0+2.094)*0.5+0.5, sin(uTime+vMapUv.y*8.0+4.188)*0.5+0.5);
+         gl_FragColor = vec4( outgoingLight * rainbow, diffuseColor.a );`
+      );
+    } else if (mode === 'glitch') {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
+        `vec2 uvOff = vMapUv;
+         float glitch = step(0.98, fract(sin(floor(vMapUv.y*20.0 + uTime*3.0)*127.1)*43758.5));
+         uvOff.x += glitch * 0.1 * sin(uTime*50.0);
+         gl_FragColor = vec4( outgoingLight * (1.0 + glitch * 2.0), diffuseColor.a );`
+      );
+    } else if (mode === 'xray') {
+      mat.transparent = true;
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
+        `float rim = 1.0 - abs(dot(normalize(vNormal), normalize(vec3(0,0,1))));
+         rim = pow(rim, 2.5);
+         vec3 xrayColor = vec3(0.2, 0.8, 1.0) * rim;
+         gl_FragColor = vec4( xrayColor, rim * 0.9 );`
+      );
+    }
+    mat.userData.shader = shader;
+  };
+  return mat;
+}
+
+const geo = new THREE.SphereGeometry(2, 64, 64);
+let mesh = null;
+let currentMode = 'ripple';
+
+function applyMode(mode) {
+  currentMode = mode;
+  if (mesh) { scene.remove(mesh); mesh.material.dispose(); }
+  const mat = buildMaterial(mode);
+  mesh = new THREE.Mesh(geo, mat);
+  scene.add(mesh);
+  ['btnRipple','btnNoise','btnRainbow','btnGlitch','btnXray'].forEach(id => {
+    const m = id.replace('btn','').toLowerCase();
+    document.getElementById(id).classList.toggle('active', m === mode);
+  });
+}
+
+document.getElementById('btnRipple') .addEventListener('click', () => applyMode('ripple'));
+document.getElementById('btnNoise')  .addEventListener('click', () => applyMode('noise'));
+document.getElementById('btnRainbow').addEventListener('click', () => applyMode('rainbow'));
+document.getElementById('btnGlitch') .addEventListener('click', () => applyMode('glitch'));
+document.getElementById('btnXray')   .addEventListener('click', () => applyMode('xray'));
+
+applyMode('ripple');
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  timeUniforms.uTime.value = t;
+  if (mesh) mesh.rotation.y += 0.005;
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

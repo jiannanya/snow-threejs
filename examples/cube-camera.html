@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — CubeCamera Live Reflections</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a14; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; align-items: center; }
+label { color: #aaa; font-size: 12px; }
+input[type=range] { width: 100px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js CubeCamera — Real-time Live Reflections on Chrome Sphere | Drag to Rotate</div>
+<div id="controls">
+  <label>Metalness <input type="range" id="metal" min="0" max="1" step="0.05" value="1"></label>
+  <label>Roughness <input type="range" id="rough" min="0" max="1" step="0.05" value="0.05"></label>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a14);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 4, 12);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// Lights
+scene.add(new THREE.AmbientLight(0x224466, 0.8));
+const lights = [];
+const lightColors = [0xff4444, 0x44ff88, 0x4488ff, 0xffcc00];
+lightColors.forEach((c, i) => {
+  const l = new THREE.PointLight(c, 30, 30);
+  const a = (i / lightColors.length) * Math.PI * 2;
+  l.position.set(Math.cos(a) * 7, 3, Math.sin(a) * 7);
+  scene.add(l);
+  // Light sphere visual
+  const lv = new THREE.Mesh(
+    new THREE.SphereGeometry(0.2, 8, 8),
+    new THREE.MeshBasicMaterial({ color: c })
+  );
+  lv.position.copy(l.position);
+  scene.add(lv);
+  lights.push({ light: l, vis: lv, angle: a });
+});
+
+// Floor
+scene.add(new THREE.Mesh(
+  new THREE.PlaneGeometry(30, 30),
+  new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.8 })
+).rotateX(-Math.PI / 2));
+
+// Surrounding colorful objects that will be reflected
+const surroundGeos = [
+  new THREE.BoxGeometry(2, 2, 2),
+  new THREE.TorusGeometry(1, 0.3, 16, 32),
+  new THREE.ConeGeometry(0.8, 2.5, 16),
+  new THREE.IcosahedronGeometry(1, 1),
+  new THREE.CylinderGeometry(0.5, 0.8, 2, 16),
+  new THREE.OctahedronGeometry(1),
+];
+const surroundMeshes = [];
+surroundGeos.forEach((geo, i) => {
+  const angle = (i / surroundGeos.length) * Math.PI * 2;
+  const mesh = new THREE.Mesh(geo,
+    new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(i/surroundGeos.length,0.9,0.5), roughness: 0.5 })
+  );
+  mesh.position.set(Math.cos(angle)*6, 1.5, Math.sin(angle)*6);
+  scene.add(mesh);
+  surroundMeshes.push({ mesh, angle });
+});
+
+// CubeCamera for live environment map
+const cubeRT = new THREE.WebGLCubeRenderTarget(256);
+cubeRT.texture.type = THREE.HalfFloatType;
+const cubeCamera = new THREE.CubeCamera(0.1, 100, cubeRT);
+scene.add(cubeCamera);
+
+// Chrome sphere that uses the live cube map
+const chromeMat = new THREE.MeshStandardMaterial({
+  metalness: 1, roughness: 0.05,
+  envMap: cubeRT.texture,
+  envMapIntensity: 1,
+});
+const chromeSphere = new THREE.Mesh(new THREE.SphereGeometry(2, 64, 64), chromeMat);
+chromeSphere.position.y = 2;
+scene.add(chromeSphere);
+
+document.getElementById('metal').addEventListener('input', e => { chromeMat.metalness = +e.target.value; });
+document.getElementById('rough').addEventListener('input', e => { chromeMat.roughness = +e.target.value; });
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+
+  // Animate surrounding objects
+  surroundMeshes.forEach(({ mesh, angle }, i) => {
+    const a = angle + t * 0.3;
+    mesh.position.set(Math.cos(a) * 6, 1.5 + Math.sin(t + i) * 0.5, Math.sin(a) * 6);
+    mesh.rotation.y = t * 0.5;
+    mesh.rotation.x = t * 0.3;
+  });
+
+  // Animate lights
+  lights.forEach(({ light, vis, angle }, i) => {
+    const a = angle + t * 0.5;
+    const x = Math.cos(a) * 7;
+    const z = Math.sin(a) * 7;
+    const y = 3 + Math.sin(t * 1.5 + i) * 1.5;
+    light.position.set(x, y, z);
+    vis.position.set(x, y, z);
+  });
+
+  // Update cube camera (hide sphere so it doesn't reflect itself)
+  chromeSphere.visible = false;
+  cubeCamera.position.copy(chromeSphere.position);
+  cubeCamera.update(renderer, scene);
+  chromeSphere.visible = true;
+
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Fat Lines</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #050510; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+label { color: #aaa; font-size: 12px; }
+input[type=range] { width: 100px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Fat Lines — Line2 · LineMaterial · Configurable Width · Dashed</div>
+<div id="controls">
+  <button id="btnHelix" class="active">Helix</button>
+  <button id="btnGrid">Grid</button>
+  <button id="btnStar">Star Burst</button>
+  <button id="btnDash">Dashed</button>
+  <label>Line Width <input type="range" id="lineW" min="1" max="20" step="0.5" value="4"></label>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls }  from 'three/addons/controls/OrbitControls.js';
+import { Line2 }          from 'three/addons/lines/Line2.js';
+import { LineMaterial }   from 'three/addons/lines/LineMaterial.js';
+import { LineGeometry }   from 'three/addons/lines/LineGeometry.js';
+import { LineSegments2 }  from 'three/addons/lines/LineSegments2.js';
+import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x050510);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 8, 18);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+let lineWidth = 4;
+let isDashed = false;
+let activeLines = [];
+
+function clearLines() {
+  activeLines.forEach(l => { scene.remove(l); l.geometry.dispose(); l.material.dispose(); });
+  activeLines = [];
+}
+
+function makeMat(color, dash) {
+  return new LineMaterial({
+    color, linewidth: lineWidth,
+    resolution: new THREE.Vector2(innerWidth, innerHeight),
+    dashed: dash, dashScale: 2, dashSize: 0.5, gapSize: 0.3,
+    vertexColors: false,
+  });
+}
+
+function buildHelix() {
+  clearLines();
+  const N = 200;
+  const positions = [];
+  const colors = [];
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const angle = t * Math.PI * 8;
+    const r = 4;
+    positions.push(Math.cos(angle)*r, t*12 - 6, Math.sin(angle)*r);
+    const c = new THREE.Color().setHSL(t, 1, 0.6);
+    colors.push(c.r, c.g, c.b);
+  }
+  const geo = new LineGeometry();
+  geo.setPositions(positions);
+  geo.setColors(colors);
+  const mat = new LineMaterial({
+    linewidth: lineWidth, vertexColors: true, dashed: isDashed,
+    dashScale: 2, dashSize: 0.5, gapSize: 0.3,
+    resolution: new THREE.Vector2(innerWidth, innerHeight),
+  });
+  const line = new Line2(geo, mat);
+  line.computeLineDistances();
+  scene.add(line);
+  activeLines.push(line);
+}
+
+function buildGrid() {
+  clearLines();
+  const SIZE = 10, DIV = 10;
+  const segs = [];
+  for (let i = -DIV; i <= DIV; i++) {
+    const x = (i / DIV) * SIZE;
+    segs.push(-SIZE, 0, x, SIZE, 0, x);
+    segs.push(x, 0, -SIZE, x, 0, SIZE);
+  }
+  const geo = new LineSegmentsGeometry();
+  geo.setPositions(segs);
+  const mat = new LineMaterial({
+    color: 0x44aaff, linewidth: lineWidth, dashed: isDashed,
+    dashScale: 2, dashSize: 0.5, gapSize: 0.3,
+    resolution: new THREE.Vector2(innerWidth, innerHeight),
+  });
+  const line = new LineSegments2(geo, mat);
+  line.computeLineDistances();
+  scene.add(line);
+  activeLines.push(line);
+}
+
+function buildStar() {
+  clearLines();
+  const N = 60;
+  for (let i = 0; i < N; i++) {
+    const angle = (i / N) * Math.PI * 2;
+    const r = 6 + Math.sin(i * 3.7) * 2;
+    const positions = [0, 0, 0, Math.cos(angle)*r, Math.sin(i * 0.4)*2, Math.sin(angle)*r];
+    const geo = new LineGeometry();
+    geo.setPositions(positions);
+    const mat = new LineMaterial({
+      color: new THREE.Color().setHSL(i/N, 1, 0.6).getHex(),
+      linewidth: lineWidth, dashed: isDashed, dashScale: 2, dashSize: 0.5, gapSize: 0.3,
+      resolution: new THREE.Vector2(innerWidth, innerHeight),
+    });
+    const line = new Line2(geo, mat);
+    line.computeLineDistances();
+    scene.add(line);
+    activeLines.push(line);
+  }
+}
+
+let currentMode = 'helix';
+function rebuild() {
+  if (currentMode === 'helix') buildHelix();
+  else if (currentMode === 'grid') buildGrid();
+  else buildStar();
+}
+
+document.getElementById('btnHelix').addEventListener('click', () => { currentMode='helix'; rebuild(); setActive('btnHelix'); });
+document.getElementById('btnGrid') .addEventListener('click', () => { currentMode='grid';  rebuild(); setActive('btnGrid'); });
+document.getElementById('btnStar') .addEventListener('click', () => { currentMode='star';  rebuild(); setActive('btnStar'); });
+document.getElementById('btnDash') .addEventListener('click', e => { isDashed=!isDashed; rebuild(); e.currentTarget.classList.toggle('active',isDashed); });
+document.getElementById('lineW')   .addEventListener('input', e => { lineWidth=+e.target.value; rebuild(); });
+
+function setActive(id) {
+  ['btnHelix','btnGrid','btnStar'].forEach(b => document.getElementById(b).classList.toggle('active', b===id));
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  activeLines.forEach(l => l.material.resolution.set(innerWidth, innerHeight));
+});
+
+buildHelix();
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  activeLines.forEach((l, i) => l.rotation.y = t * 0.2 + i * 0.1);
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

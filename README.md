@@ -904,6 +904,816 @@ const renderer = await createRenderer();
 
 ---
 
+## New Examples (30 Additional)
+
+### New Beginner Examples
+
+<table>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/axes-helpers.html"><img src="./images/axes-helpers.png" width="100%"></a><br>
+<b>Axes Helpers</b><br><sub>AxesHelper · GridHelper · ArrowHelper · BoxHelper</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/wireframe-mode.html"><img src="./images/wireframe-mode.png" width="100%"></a><br>
+<b>Wireframe Mode</b><br><sub>Solid · WireframeGeometry · EdgesGeometry</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/groups-hierarchy.html"><img src="./images/groups-hierarchy.png" width="100%"></a><br>
+<b>Groups & Hierarchy</b><br><sub>Parent-child transforms · Solar system</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/vertex-colors.html"><img src="./images/vertex-colors.png" width="100%"></a><br>
+<b>Vertex Colors</b><br><sub>Per-vertex color painting · HSL/Gradient/Noise</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/transparent-blend.html"><img src="./images/transparent-blend.png" width="100%"></a><br>
+<b>Transparency & Blending</b><br><sub>opacity · NormalBlend · AdditiveBlend</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/clock-easing.html"><img src="./images/clock-easing.png" width="100%"></a><br>
+<b>Clock & Easing</b><br><sub>THREE.Clock · 6 easing functions</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/background-modes.html"><img src="./images/background-modes.png" width="100%"></a><br>
+<b>Background Modes</b><br><sub>Solid · Gradient · CubeMap backgrounds</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/simple-physics.html"><img src="./images/simple-physics.png" width="100%"></a><br>
+<b>Simple Physics</b><br><sub>Gravity · Elastic bounce · Wall collision</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/multi-viewport.html"><img src="./images/multi-viewport.png" width="100%"></a><br>
+<b>Multi Viewport</b><br><sub>Split-screen scissor · Perspective + Ortho</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/css2d-labels.html"><img src="./images/css2d-labels.png" width="100%"></a><br>
+<b>CSS2D Labels</b><br><sub>CSS2DRenderer · 3D projected planet labels</sub>
+</td>
+<td></td><td></td>
+</tr>
+</table>
+
+### New Intermediate Examples
+
+<table>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/curve-path.html"><img src="./images/curve-path.png" width="100%"></a><br>
+<b>Curve Path</b><br><sub>CatmullRomCurve3 · TubeGeometry · path following</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/shape-extrude.html"><img src="./images/shape-extrude.png" width="100%"></a><br>
+<b>Shape Extrude</b><br><sub>THREE.Shape · ExtrudeGeometry · bevel</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/lod.html"><img src="./images/lod.png" width="100%"></a><br>
+<b>LOD</b><br><sub>THREE.LOD · level-of-detail by distance</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/cube-camera.html"><img src="./images/cube-camera.png" width="100%"></a><br>
+<b>Cube Camera</b><br><sub>Live environment reflections · CubeCamera</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/water-surface.html"><img src="./images/water-surface.png" width="100%"></a><br>
+<b>Water Surface</b><br><sub>ShaderMaterial wave displacement · foam</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/outline-select.html"><img src="./images/outline-select.png" width="100%"></a><br>
+<b>Outline Select</b><br><sub>OutlinePass · click/hover selection highlight</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/render-target.html"><img src="./images/render-target.png" width="100%"></a><br>
+<b>Render Target</b><br><sub>WebGLRenderTarget · off-screen security camera</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/skeleton-anim.html"><img src="./images/skeleton-anim.png" width="100%"></a><br>
+<b>Skeleton Animation</b><br><sub>SkinnedMesh · Bone hierarchy · skinning</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/normal-map.html"><img src="./images/normal-map.png" width="100%"></a><br>
+<b>Normal Map</b><br><sub>Procedural normal maps · surface detail</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/audio-visualizer.html"><img src="./images/audio-visualizer.png" width="100%"></a><br>
+<b>Audio Visualizer</b><br><sub>Web Audio FFT → 3D bar visualization</sub>
+</td>
+<td></td><td></td>
+</tr>
+</table>
+
+### New Advanced Examples
+
+<table>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/procedural-terrain.html"><img src="./images/procedural-terrain.png" width="100%"></a><br>
+<b>Procedural Terrain</b><br><sub>Multi-octave noise · heightmap · height coloring</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/text-3d.html"><img src="./images/text-3d.png" width="100%"></a><br>
+<b>3D Text</b><br><sub>FontLoader · TextGeometry · bevel · animation</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/fat-lines.html"><img src="./images/fat-lines.png" width="100%"></a><br>
+<b>Fat Lines</b><br><sub>Line2 · LineMaterial · configurable width · dashed</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/sky-atmosphere.html"><img src="./images/sky-atmosphere.png" width="100%"></a><br>
+<b>Sky Atmosphere</b><br><sub>Sky shader · sun position · Rayleigh scattering</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/procedural-city.html"><img src="./images/procedural-city.png" width="100%"></a><br>
+<b>Procedural City</b><br><sub>Random buildings · street grid · night lights</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/shader-extend.html"><img src="./images/shader-extend.png" width="100%"></a><br>
+<b>Shader Extend</b><br><sub>onBeforeCompile · GLSL injection · 5 effects</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/depth-of-field.html"><img src="./images/depth-of-field.png" width="100%"></a><br>
+<b>Depth of Field</b><br><sub>BokehPass · EffectComposer · focus control</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/texture-atlas.html"><img src="./images/texture-atlas.png" width="100%"></a><br>
+<b>Texture Atlas</b><br><sub>Sprite sheet · UV offset animation · billboards</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/particle-emitter.html"><img src="./images/particle-emitter.png" width="100%"></a><br>
+<b>Particle Emitter</b><br><sub>Pool recycling · lifetime · fade · physics</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/multi-material.html"><img src="./images/multi-material.png" width="100%"></a><br>
+<b>Multi Material</b><br><sub>Per-face material groups · Box/Cylinder/Cone</sub>
+</td>
+<td></td><td></td>
+</tr>
+</table>
+
+---
+
+### New Beginner — Detail Descriptions
+
+#### 21. Axes Helpers — Debug Helpers
+
+**File**: [`examples/axes-helpers.html`](./examples/axes-helpers.html)
+
+Demonstrates `AxesHelper` (RGB = XYZ axes), `GridHelper`, `ArrowHelper` (6 cardinal directions), and `BoxHelper` on rotating cubes. Toggle each helper independently with buttons.
+
+```javascript
+const axes = new THREE.AxesHelper(5); // red=X, green=Y, blue=Z
+scene.add(axes);
+const grid = new THREE.GridHelper(10, 10, 0x444444, 0x222222);
+scene.add(grid);
+const box = new THREE.BoxHelper(mesh, 0xffff00);
+scene.add(box);
+box.update(); // call every frame if mesh moves
+```
+
+---
+
+#### 22. Wireframe Mode — Geometry Display Modes
+
+**File**: [`examples/wireframe-mode.html`](./examples/wireframe-mode.html)
+
+Compare Solid, `WireframeGeometry` (all triangle edges), and `EdgesGeometry` (hard edges only) on three different base geometries. Toggle between modes with buttons.
+
+```javascript
+// Solid mode
+const solidMesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x4488ff }));
+
+// WireframeGeometry — shows every triangle edge
+const wireGeo = new THREE.WireframeGeometry(geo);
+const wireMesh = new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial({ color: 0x88ccff }));
+
+// EdgesGeometry — shows only hard edges (creases > threshold angle)
+const edgeGeo = new THREE.EdgesGeometry(geo);
+const edgeMesh = new THREE.LineSegments(edgeGeo, new THREE.LineBasicMaterial({ color: 0xffffff }));
+```
+
+---
+
+#### 23. Groups & Hierarchy — Parent-Child Transforms
+
+**File**: [`examples/groups-hierarchy.html`](./examples/groups-hierarchy.html)
+
+Solar system demonstrating nested `THREE.Group` parent-child transform inheritance. Earth orbits the Sun (child group); Moon orbits Earth (nested child). Rotations propagate down the hierarchy.
+
+```javascript
+const solarSystem = new THREE.Group();
+const earthOrbit  = new THREE.Group(); // child of solarSystem
+const moonOrbit   = new THREE.Group(); // child of earthOrbit
+
+solarSystem.add(earthOrbit);
+earthOrbit.add(moonOrbit);
+scene.add(solarSystem);
+
+// Each group rotation affects all children
+solarSystem.rotation.y += 0.01; // rotates everything
+earthOrbit.rotation.y  += 0.03; // rotates Earth + Moon around Sun
+moonOrbit.rotation.y   += 0.07; // rotates Moon around Earth
+```
+
+---
+
+#### 24. Vertex Colors — Per-vertex Color Painting
+
+**File**: [`examples/vertex-colors.html`](./examples/vertex-colors.html)
+
+Assigns HSL Rainbow, Gradient, or Noise colors per-vertex on a high-res `SphereGeometry`. Requires `vertexColors: true` on the material.
+
+```javascript
+const colors = [];
+for (let i = 0; i < pos.count; i++) {
+  const c = new THREE.Color().setHSL(i / pos.count, 1, 0.5);
+  colors.push(c.r, c.g, c.b);
+}
+geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+const mat = new THREE.MeshStandardMaterial({ vertexColors: true });
+```
+
+---
+
+#### 25. Transparency & Blending — Blend Modes
+
+**File**: [`examples/transparent-blend.html`](./examples/transparent-blend.html)
+
+Five demo pairs showing: Opaque, `opacity: 0.5`, `NormalBlending`, `AdditiveBlending`, and `depthWrite: false`. Demonstrates when to use each blending mode.
+
+```javascript
+// Additive blending (glowing effects, fire, particles)
+const mat = new THREE.MeshStandardMaterial({
+  color: 0xff8800, transparent: true, opacity: 0.7,
+  blending: THREE.AdditiveBlending, depthWrite: false,
+});
+```
+
+---
+
+#### 26. Clock & Easing — Animation Timing
+
+**File**: [`examples/clock-easing.html`](./examples/clock-easing.html)
+
+Uses `THREE.Clock` for dt-based timing. Shows 6 cubes each animated with a different easing function: Linear, SineIn, CubicInOut, BounceOut, ElasticOut, BackOut.
+
+```javascript
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  const dt = clock.getDelta(); // time since last frame
+
+  // Easing examples
+  const linear    = t % 1;
+  const sineIn    = 1 - Math.cos(t * Math.PI / 2);
+  const bounceOut = bounce(t % 1); // custom bounce function
+});
+```
+
+---
+
+#### 27. Background Modes — Scene Backgrounds
+
+**File**: [`examples/background-modes.html`](./examples/background-modes.html)
+
+Toggle between 4 background types: solid color, canvas gradient texture, sky gradient (sunset colors), and procedural CubeMap environment. Objects always visible in foreground.
+
+```javascript
+// Gradient texture background
+const canvas = document.createElement('canvas');
+// ... draw gradient on canvas ...
+scene.background = new THREE.CanvasTexture(canvas);
+
+// CubeMap background
+const cubeRT = new THREE.WebGLCubeRenderTarget(256);
+const cubeCamera = new THREE.CubeCamera(0.1, 100, cubeRT);
+scene.background = cubeRT.texture;
+```
+
+---
+
+#### 28. Simple Physics — Manual Physics
+
+**File**: [`examples/simple-physics.html`](./examples/simple-physics.html)
+
+Manual gravity integration, elastic bounce off floor, wall collision detection. No external physics library required. Configurable gravity, restitution, and ball count.
+
+```javascript
+// dt-based physics integration
+const dt = clock.getDelta();
+ball.vy -= gravity * dt;        // apply gravity
+ball.py += ball.vy * dt;        // integrate position
+
+if (ball.py < radius) {         // floor bounce
+  ball.py = radius;
+  ball.vy *= -restitution;      // elastic bounce
+}
+```
+
+---
+
+#### 29. Multi Viewport — Split-screen Rendering
+
+**File**: [`examples/multi-viewport.html`](./examples/multi-viewport.html)
+
+Renders the same scene from two cameras using `renderer.setScissor()` and `renderer.setViewport()`. Left: `PerspectiveCamera` + `OrbitControls`. Right: `OrthographicCamera` top-down view.
+
+```javascript
+renderer.setScissorTest(true);
+// Left viewport (perspective)
+renderer.setScissor(0, 0, w/2, h);
+renderer.setViewport(0, 0, w/2, h);
+renderer.render(scene, perspCamera);
+// Right viewport (orthographic)
+renderer.setScissor(w/2, 0, w/2, h);
+renderer.setViewport(w/2, 0, w/2, h);
+renderer.render(scene, orthoCamera);
+```
+
+---
+
+#### 30. CSS2D Labels — 3D-projected DOM Labels
+
+**File**: [`examples/css2d-labels.html`](./examples/css2d-labels.html)
+
+Uses `CSS2DRenderer` to overlay HTML DOM elements that project into 3D space and always face the camera. Demonstrates planet labels in an orbiting solar system.
+
+```javascript
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(labelRenderer.domElement);
+
+const div = document.createElement('div');
+div.textContent = 'Earth';
+const label = new CSS2DObject(div);
+planet.add(label); // label follows planet in 3D space
+
+// In render loop:
+labelRenderer.render(scene, camera);
+```
+
+---
+
+### New Intermediate — Detail Descriptions
+
+#### 31. Curve Path — Spline Path Following
+
+**File**: [`examples/curve-path.html`](./examples/curve-path.html)
+
+`CatmullRomCurve3` closed spline wrapped in `TubeGeometry`. A cone object follows the path using `curve.getPointAt(t)` and `getTangentAt(t)` for orientation. Trail particle ring buffer shows history.
+
+```javascript
+const curve = new THREE.CatmullRomCurve3(points, true); // closed=true
+const tubeGeo = new THREE.TubeGeometry(curve, 200, 0.05, 8, true);
+
+// Path following
+const t = (clock.getElapsedTime() * 0.1) % 1;
+const pos = curve.getPointAt(t);
+const tangent = curve.getTangentAt(t);
+traveler.position.copy(pos);
+traveler.lookAt(pos.clone().add(tangent));
+```
+
+---
+
+#### 32. Shape Extrude — 2D Shape to 3D
+
+**File**: [`examples/shape-extrude.html`](./examples/shape-extrude.html)
+
+Five shapes built with `THREE.Shape`: Star, Heart, Arrow, Gear (with hole), and Letter. All extruded with `ExtrudeGeometry` and bevel. Switch between shapes with buttons.
+
+```javascript
+const shape = new THREE.Shape();
+shape.moveTo(0, 0.5);
+// ... draw star outline with lineTo/bezierCurveTo ...
+
+const extrudeSettings = {
+  depth: 0.4, bevelEnabled: true,
+  bevelThickness: 0.05, bevelSize: 0.04, bevelSegments: 3,
+};
+const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+```
+
+---
+
+#### 33. LOD — Level of Detail
+
+**File**: [`examples/lod.html`](./examples/lod.html)
+
+`THREE.LOD` with 3 sphere levels (64/16/4 segments). A grid of LOD objects switches level automatically by camera distance. Color changes by LOD level (green=high, yellow=medium, red=low).
+
+```javascript
+const lod = new THREE.LOD();
+lod.addLevel(new THREE.Mesh(new THREE.SphereGeometry(1, 64, 64), mat), 0);   // high detail
+lod.addLevel(new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), mat), 8);   // medium
+lod.addLevel(new THREE.Mesh(new THREE.SphereGeometry(1, 4, 4), mat), 20);    // low detail
+scene.add(lod);
+lod.update(camera); // call each frame
+```
+
+---
+
+#### 34. Cube Camera — Live Reflections
+
+**File**: [`examples/cube-camera.html`](./examples/cube-camera.html)
+
+`WebGLCubeRenderTarget` + `CubeCamera` updates every frame for live environment reflections on a chrome sphere. The reflective object must be hidden before the cube camera update to avoid self-reflection.
+
+```javascript
+const cubeRT = new THREE.WebGLCubeRenderTarget(256, {
+  generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter,
+});
+const cubeCamera = new THREE.CubeCamera(0.1, 100, cubeRT);
+scene.add(cubeCamera);
+
+const mat = new THREE.MeshStandardMaterial({ envMap: cubeRT.texture, metalness: 1, roughness: 0 });
+
+// In render loop:
+chromeSphere.visible = false;  // hide to avoid self-reflection
+cubeCamera.update(renderer, scene);
+chromeSphere.visible = true;
+```
+
+---
+
+#### 35. Water Surface — Shader Wave Displacement
+
+**File**: [`examples/water-surface.html`](./examples/water-surface.html)
+
+`ShaderMaterial` with multi-wave vertex displacement (overlapping sine waves), foam at crests, floating boats, exponential fog, and a night sky with stars. No external Water addon required.
+
+```javascript
+// Vertex shader wave displacement
+vec3 newPos = position;
+newPos.y += sin(position.x * 0.5 + uTime) * 0.4
+           + sin(position.z * 0.3 + uTime * 1.3) * 0.3
+           + sin((position.x + position.z) * 0.4 + uTime * 0.8) * 0.2;
+```
+
+---
+
+#### 36. Outline Select — Post-process Selection
+
+**File**: [`examples/outline-select.html`](./examples/outline-select.html)
+
+`OutlinePass` from `EffectComposer` highlights selected objects. Click toggles blue outline selection; hover shows yellow outline. Uses `Raycaster` for hit detection.
+
+```javascript
+import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
+
+const outlinePass = new OutlinePass(new THREE.Vector2(w, h), scene, camera);
+outlinePass.edgeStrength = 3;
+outlinePass.edgeThickness = 1;
+outlinePass.visibleEdgeColor.set(0x4488ff); // blue = selected
+composer.addPass(outlinePass);
+
+outlinePass.selectedObjects = [clickedMesh]; // update on click
+```
+
+---
+
+#### 37. Render Target — Off-screen Rendering
+
+**File**: [`examples/render-target.html`](./examples/render-target.html)
+
+`WebGLRenderTarget` renders the scene from a secondary camera into a texture displayed on a "monitor" plane. Demonstrates the render-to-texture pattern for portals, security cameras, mirrors.
+
+```javascript
+const renderTarget = new THREE.WebGLRenderTarget(512, 512);
+const secCamera = new THREE.PerspectiveCamera(80, 1, 0.1, 100);
+const monitor = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: renderTarget.texture }));
+
+// In render loop:
+renderer.setRenderTarget(renderTarget);
+renderer.render(scene, secCamera);      // render to texture
+renderer.setRenderTarget(null);
+renderer.render(scene, camera);         // render to screen
+```
+
+---
+
+#### 38. Skeleton Animation — SkinnedMesh
+
+**File**: [`examples/skeleton-anim.html`](./examples/skeleton-anim.html)
+
+Manually builds a `SkinnedMesh` cylinder with a 5-bone chain. Bone weights assigned by vertex Y position. Animates bones with sine waves for wave, bend, and twist motions.
+
+```javascript
+const bones = [];
+for (let i = 0; i < BONE_COUNT; i++) {
+  const bone = new THREE.Bone();
+  bone.position.y = i === 0 ? 0 : SEGMENT_HEIGHT;
+  bones.push(bone);
+  if (i > 0) bones[i-1].add(bone); // chain
+}
+const skeleton = new THREE.Skeleton(bones);
+const skinnedMesh = new THREE.SkinnedMesh(geo, mat);
+skinnedMesh.bind(skeleton);
+
+// In render loop — animate bones:
+bones.forEach((bone, i) => {
+  bone.rotation.z = Math.sin(t * 2 + i * 0.4) * 0.2;
+});
+```
+
+---
+
+#### 39. Normal Map — Surface Detail Textures
+
+**File**: [`examples/normal-map.html`](./examples/normal-map.html)
+
+Four procedural normal maps generated via Canvas API (Brick, Scales, Cracked Stone, Metal Plate). Applied to `MeshStandardMaterial.normalMap`. Moving point light reveals the surface detail.
+
+```javascript
+// Canvas-generated normal map
+const canvas = document.createElement('canvas');
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#8080ff'; // flat normal (pointing +Z)
+ctx.fillRect(0, 0, size, size);
+// Draw grooves, bumps using different color normals...
+
+const normalMap = new THREE.CanvasTexture(canvas);
+material.normalMap = normalMap;
+material.normalScale.set(2, 2); // intensity
+```
+
+---
+
+#### 40. Audio Visualizer — FFT 3D Bars
+
+**File**: [`examples/audio-visualizer.html`](./examples/audio-visualizer.html)
+
+`AnalyserNode` FFT data drives 3D bar heights each frame. Two display modes: flat bar chart and circular ring. Falls back to animated demo data when no microphone is available.
+
+```javascript
+const audioCtx = new AudioContext();
+const analyser = audioCtx.createAnalyser();
+analyser.fftSize = 128; // 64 frequency bins
+const source = audioCtx.createMediaStreamSource(micStream);
+source.connect(analyser);
+const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+// In render loop:
+analyser.getByteFrequencyData(dataArray);
+bars.forEach((bar, i) => {
+  bar.scale.y = dataArray[i] * heightScale;
+});
+```
+
+---
+
+### New Advanced — Detail Descriptions
+
+#### 41. Procedural Terrain — Noise Heightmap
+
+**File**: [`examples/procedural-terrain.html`](./examples/procedural-terrain.html)
+
+Multi-octave fBm noise displaces a 128×128 `PlaneGeometry` into a terrain. Color assigned per-vertex by height (water/beach/grass/forest/rock/snow). Flyover camera orbits the landscape.
+
+```javascript
+// Fractal Brownian Motion (fBm) for terrain
+function fbm(x, y, octaves) {
+  let v=0, amp=0.5, freq=1, max=0;
+  for (let i=0; i<octaves; i++) {
+    v   += noise2(x*freq, y*freq) * amp;
+    max += amp;
+    amp *= 0.5; freq *= 2; // each octave: half amplitude, double frequency
+  }
+  return v / max;
+}
+const h = fbm(x/20, z/20, 4) * heightScale;
+pos.setY(i, h);
+```
+
+---
+
+#### 42. 3D Text — FontLoader & TextGeometry
+
+**File**: [`examples/text-3d.html`](./examples/text-3d.html)
+
+Loads `helvetiker_bold` font via `FontLoader`, creates individual letter meshes with `TextGeometry` and bevel. Animates letters in Normal, Wave, and Explode modes.
+
+```javascript
+import { FontLoader }   from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+const loader = new FontLoader();
+loader.load('https://cdn.jsdelivr.net/npm/three@0.167.1/examples/fonts/helvetiker_bold.typeface.json', font => {
+  const geo = new TextGeometry('Hello', {
+    font, size: 1.2, depth: 0.4,
+    bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.04,
+  });
+  geo.computeBoundingBox(); // needed for centering
+  scene.add(new THREE.Mesh(geo, material));
+});
+```
+
+---
+
+#### 43. Fat Lines — Line2 / LineMaterial
+
+**File**: [`examples/fat-lines.html`](./examples/fat-lines.html)
+
+`Line2` + `LineMaterial` for configurable-width lines (native WebGL lines are always 1px). Helix with vertex colors, grid with `LineSegments2`, and a star-burst pattern. Supports dashed lines.
+
+```javascript
+import { Line2 }        from 'three/addons/lines/Line2.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+
+const geo = new LineGeometry();
+geo.setPositions(positions); // flat [x,y,z, x,y,z, ...]
+geo.setColors(colors);       // flat [r,g,b, r,g,b, ...]
+
+const mat = new LineMaterial({
+  linewidth: 4, // pixels
+  vertexColors: true, dashed: false,
+  resolution: new THREE.Vector2(innerWidth, innerHeight), // REQUIRED
+});
+const line = new Line2(geo, mat);
+line.computeLineDistances(); // needed for dashed
+```
+
+---
+
+#### 44. Sky Atmosphere — Sky Shader
+
+**File**: [`examples/sky-atmosphere.html`](./examples/sky-atmosphere.html)
+
+`Sky` addon with Rayleigh/Mie scattering, sun elevation/azimuth control, and day/night cycle. Combined with `Water` surface for a complete outdoor environment.
+
+```javascript
+import { Sky }   from 'three/addons/objects/Sky.js';
+import { Water } from 'three/addons/objects/Water.js';
+
+const sky = new Sky();
+sky.scale.setScalar(450000);
+scene.add(sky);
+
+const phi   = THREE.MathUtils.degToRad(90 - elevation);
+const theta = THREE.MathUtils.degToRad(azimuth);
+const sun = new THREE.Vector3().setFromSphericalCoords(1, phi, theta);
+sky.material.uniforms.sunPosition.value.copy(sun);
+sky.material.uniforms.turbidity.value = 10;
+sky.material.uniforms.rayleigh.value  = 3;
+renderer.toneMappingExposure = 0.5;
+```
+
+---
+
+#### 45. Procedural City — Random Buildings
+
+**File**: [`examples/procedural-city.html`](./examples/procedural-city.html)
+
+Math.random() grid of `BoxGeometry` buildings with varying heights, colors, and window lights. Street grid with `LineBasicMaterial`. Point lights for street lamps. Fly-over camera.
+
+```javascript
+for (let row = 0; row < GRID_SIZE; row++) {
+  for (let col = 0; col < GRID_SIZE; col++) {
+    if (Math.random() < 0.15) continue; // empty lot
+    const h = 1 + Math.random() * 20;   // random height
+    const building = new THREE.Mesh(
+      new THREE.BoxGeometry(w, h, d),
+      new THREE.MeshStandardMaterial({ color: buildingColors[Math.floor(Math.random() * buildingColors.length)] })
+    );
+    building.position.set(x, h/2, z);
+    scene.add(building);
+  }
+}
+```
+
+---
+
+#### 46. Shader Extend — onBeforeCompile
+
+**File**: [`examples/shader-extend.html`](./examples/shader-extend.html)
+
+Extends `MeshStandardMaterial` by injecting custom GLSL via `onBeforeCompile`. Five effect modes: Ripple UV distortion, Noise Dissolve (discard), Rainbow tint, Glitch, and X-Ray rim.
+
+```javascript
+material.onBeforeCompile = (shader) => {
+  shader.uniforms.uTime = { value: 0 };
+  shader.fragmentShader = 'uniform float uTime;\n' + shader.fragmentShader;
+
+  // Inject before gl_FragColor output
+  shader.fragmentShader = shader.fragmentShader.replace(
+    'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
+    `vec3 rainbow = vec3(sin(uTime + vMapUv.y * 8.0) * 0.5 + 0.5, ...);
+     gl_FragColor = vec4( outgoingLight * rainbow, diffuseColor.a );`
+  );
+  material.userData.shader = shader; // store ref to update uniforms
+};
+```
+
+---
+
+#### 47. Depth of Field — BokehPass
+
+**File**: [`examples/depth-of-field.html`](./examples/depth-of-field.html)
+
+`BokehPass` from `EffectComposer` creates camera-lens depth of field blur. Focus distance, aperture, and max blur are controllable. Objects at different Z depths show varying blur.
+
+```javascript
+import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+
+const bokehPass = new BokehPass(scene, camera, {
+  focus: 10, aperture: 0.00015, maxblur: 0.006,
+});
+composer.addPass(bokehPass);
+
+// Update parameters at runtime:
+bokehPass.uniforms.focus.value    = 15;
+bokehPass.uniforms.aperture.value = 0.0002;
+bokehPass.uniforms.maxblur.value  = 0.01;
+```
+
+---
+
+#### 48. Texture Atlas — Sprite Sheet Animation
+
+**File**: [`examples/texture-atlas.html`](./examples/texture-atlas.html)
+
+Canvas-generated 4×4 sprite sheet textures for Explosion, Fire, and Coin flip. UV `offset` and `repeat` cycle through frames each tick. Billboard sprites always face the camera.
+
+```javascript
+// Set up atlas UV tiling
+mat.map.repeat.set(1/COLS, 1/ROWS); // one frame size
+
+// Animate frame each tick
+const frame = Math.floor((t * fps + offset) % FRAMES);
+const col = frame % COLS;
+const row = Math.floor(frame / COLS);
+mat.map.offset.set(col / COLS, (ROWS - 1 - row) / ROWS);
+
+// Billboard: face camera
+sprite.quaternion.copy(camera.quaternion);
+```
+
+---
+
+#### 49. Particle Emitter — Pool & Lifecycle
+
+**File**: [`examples/particle-emitter.html`](./examples/particle-emitter.html)
+
+Particle pool pattern: fixed-size array of particle objects; dead particles are recycled instead of creating new ones. Supports Fire, Smoke, Sparks, and Snow presets with configurable rate and gravity.
+
+```javascript
+// Pool-based emitter pattern
+const pool = Array.from({ length: MAX }, () => ({ active: false, life: 0, ... }));
+
+function spawnParticle() {
+  const p = pool.find(x => !x.active); // reuse dead particle
+  if (!p) return; // pool exhausted — skip
+  p.active = true; p.life = 0;
+  p.vy = 2 + Math.random() * 3; // fire upward velocity
+}
+
+// Update loop: physics + fade
+pool.forEach(p => {
+  if (!p.active) return;
+  p.vy += gravity * dt;
+  p.py += p.vy * dt;
+  p.alpha = 1 - (p.life / p.maxLife); // fade out
+  if (p.life >= p.maxLife) p.active = false; // recycle
+});
+```
+
+---
+
+#### 50. Multi Material — Per-face Material Groups
+
+**File**: [`examples/multi-material.html`](./examples/multi-material.html)
+
+A single `Mesh` with multiple `Material` groups — different material per face group. Works with `BoxGeometry` (6 faces), `CylinderGeometry` (3 parts: top/side/bottom), and `ConeGeometry` (2 parts).
+
+```javascript
+// BoxGeometry has 6 groups (one per face)
+const materials = [
+  new THREE.MeshStandardMaterial({ color: 0xff4444 }), // +X right
+  new THREE.MeshStandardMaterial({ color: 0x4444ff }), // -X left
+  new THREE.MeshStandardMaterial({ color: 0x44ff44 }), // +Y top
+  new THREE.MeshStandardMaterial({ color: 0xffaa00 }), // -Y bottom
+  new THREE.MeshStandardMaterial({ color: 0xff44ff }), // +Z front
+  new THREE.MeshStandardMaterial({ color: 0x44ffff }), // -Z back
+];
+const mesh = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), materials);
+```
+
+---
+
 ## Reference Docs
 
 | Document | Contents |

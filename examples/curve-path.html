@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Curve Path</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #080820; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; align-items: center; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+label { color: #aaa; font-size: 12px; }
+input[type=range] { width: 90px; }
+</style>
+</head>
+<body>
+<div id="info">Three.js CatmullRomCurve3 — Spline Path · TubeGeometry · Object Path-Following</div>
+<div id="controls">
+  <button id="btnTube" class="active">Show Tube</button>
+  <button id="btnPoints" class="active">Show Points</button>
+  <label>Speed <input type="range" id="speed" min="0.02" max="0.5" step="0.01" value="0.1"></label>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x080820);
+scene.fog = new THREE.FogExp2(0x080820, 0.02);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 300);
+camera.position.set(0, 12, 22);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0x334466, 1));
+const dLight = new THREE.DirectionalLight(0xaaccff, 2);
+dLight.position.set(5, 15, 5);
+scene.add(dLight);
+
+// Define control points for a closed 3D spline
+const controlPoints = [
+  new THREE.Vector3( 8,  0,  0),
+  new THREE.Vector3( 4,  6,  4),
+  new THREE.Vector3(-4,  2,  8),
+  new THREE.Vector3(-8,  6,  0),
+  new THREE.Vector3(-4,  0, -8),
+  new THREE.Vector3( 4,  4, -4),
+  new THREE.Vector3( 8,  0,  0),
+];
+
+const curve = new THREE.CatmullRomCurve3(controlPoints, true); // closed
+
+// TubeGeometry wrapping the curve
+const tubeGeo = new THREE.TubeGeometry(curve, 200, 0.12, 8, true);
+const tubeMat = new THREE.MeshStandardMaterial({
+  color: 0x4488ff, roughness: 0.3, metalness: 0.7,
+  transparent: true, opacity: 0.6, side: THREE.DoubleSide,
+});
+const tube = new THREE.Mesh(tubeGeo, tubeMat);
+scene.add(tube);
+
+// Control point markers
+const markerGeo = new THREE.SphereGeometry(0.3, 16, 16);
+const markerMat = new THREE.MeshStandardMaterial({ color: 0xff8800, emissive: 0xff4400, roughness: 0.3 });
+const markerGroup = new THREE.Group();
+controlPoints.slice(0, -1).forEach(p => {
+  const m = new THREE.Mesh(markerGeo, markerMat);
+  m.position.copy(p);
+  markerGroup.add(m);
+});
+scene.add(markerGroup);
+
+// Traveling object
+const travelerGeo = new THREE.ConeGeometry(0.3, 1.2, 8);
+travelerGeo.rotateX(Math.PI / 2);
+const travelerMat = new THREE.MeshStandardMaterial({ color: 0xff4444, emissive: 0xff0000, roughness: 0.2 });
+const traveler = new THREE.Mesh(travelerGeo, travelerMat);
+scene.add(traveler);
+
+// Glow sphere on traveler
+const glowMesh = new THREE.Mesh(
+  new THREE.SphereGeometry(0.5, 16, 16),
+  new THREE.MeshBasicMaterial({ color: 0xff4444, transparent: true, opacity: 0.3 })
+);
+traveler.add(glowMesh);
+
+let t = 0;
+let speed = 0.1;
+document.getElementById('speed').addEventListener('input', e => speed = +e.target.value);
+document.getElementById('btnTube').addEventListener('click', e => {
+  tube.visible = !tube.visible; e.currentTarget.classList.toggle('active', tube.visible);
+});
+document.getElementById('btnPoints').addEventListener('click', e => {
+  markerGroup.visible = !markerGroup.visible; e.currentTarget.classList.toggle('active', markerGroup.visible);
+});
+
+// Trail particles
+const trailPositions = new Float32Array(300 * 3);
+const trailGeo = new THREE.BufferGeometry();
+trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPositions, 3));
+const trail = new THREE.Points(trailGeo, new THREE.PointsMaterial({
+  color: 0xff8844, size: 0.15, transparent: true, opacity: 0.6, depthWrite: false,
+}));
+scene.add(trail);
+let trailIdx = 0;
+
+const tmpPos = new THREE.Vector3();
+const tmpPos2 = new THREE.Vector3();
+const up = new THREE.Vector3(0, 1, 0);
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = clock.getDelta();
+  t = (t + speed * dt) % 1;
+
+  curve.getPoint(t, tmpPos);
+  curve.getPoint((t + 0.01) % 1, tmpPos2);
+  traveler.position.copy(tmpPos);
+  traveler.lookAt(tmpPos2);
+
+  // Trail
+  trailPositions[trailIdx * 3]     = tmpPos.x;
+  trailPositions[trailIdx * 3 + 1] = tmpPos.y;
+  trailPositions[trailIdx * 3 + 2] = tmpPos.z;
+  trailIdx = (trailIdx + 1) % 300;
+  trailGeo.attributes.position.needsUpdate = true;
+
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

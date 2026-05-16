@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Render Target</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a14; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="info">Three.js RenderTarget — Off-screen Rendering · Security Camera · Portal Mirror</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// Main scene + camera + renderer
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a14);
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 4, 14);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// Lights in main scene
+scene.add(new THREE.AmbientLight(0x334466, 1));
+const dLight = new THREE.DirectionalLight(0xffffff, 2);
+dLight.position.set(5, 10, 8);
+dLight.castShadow = true;
+scene.add(dLight);
+
+// Floor + walls in main scene
+scene.add(new THREE.Mesh(
+  new THREE.PlaneGeometry(30, 30),
+  new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.9 })
+).rotateX(-Math.PI/2));
+
+// Animated objects in main scene
+const coloredObjs = [
+  { geo: new THREE.TorusKnotGeometry(0.8, 0.2, 80, 12), color: 0xff4444, x: -3 },
+  { geo: new THREE.BoxGeometry(1.5, 1.5, 1.5),          color: 0x44ff88, x:  0 },
+  { geo: new THREE.SphereGeometry(0.9, 32, 32),         color: 0x4488ff, x:  3 },
+];
+const animatedMeshes = coloredObjs.map(({ geo, color, x }) => {
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.4 }));
+  m.position.set(x, 1, 0);
+  m.castShadow = true;
+  scene.add(m);
+  return m;
+});
+
+// ─── RenderTarget: Security Camera ────────────────────────────────────
+const rtSize = 512;
+const renderTarget = new THREE.WebGLRenderTarget(rtSize, rtSize);
+
+// Security camera (a separate camera looking at the scene from a different angle)
+const secCamera = new THREE.PerspectiveCamera(80, 1, 0.1, 100);
+secCamera.position.set(-8, 8, -6);
+secCamera.lookAt(0, 1, 0);
+
+// "Monitor" — a plane that displays the RenderTarget output
+const monitorGeo = new THREE.PlaneGeometry(6, 4);
+const monitorMat = new THREE.MeshBasicMaterial({ map: renderTarget.texture });
+const monitor = new THREE.Mesh(monitorGeo, monitorMat);
+monitor.position.set(0, 4, -8);
+monitor.lookAt(camera.position);
+scene.add(monitor);
+
+// Monitor frame
+const frameGeo = new THREE.BoxGeometry(6.4, 4.4, 0.1);
+const frameMat = new THREE.MeshStandardMaterial({ color: 0x333344, roughness: 0.8 });
+const frame = new THREE.Mesh(frameGeo, frameMat);
+frame.position.copy(monitor.position);
+frame.position.z -= 0.06;
+scene.add(frame);
+
+// Security cam indicator light
+const camLight = new THREE.Mesh(
+  new THREE.SphereGeometry(0.15, 8, 8),
+  new THREE.MeshBasicMaterial({ color: 0xff0000 })
+);
+camLight.position.set(-8, 8.3, -6);
+scene.add(camLight);
+
+// Cam tripod visual
+const tripodGeo = new THREE.ConeGeometry(0.05, 1, 4);
+const tripodMat = new THREE.MeshBasicMaterial({ color: 0x555555 });
+const tripod = new THREE.Mesh(tripodGeo, tripodMat);
+tripod.position.set(-8, 7.5, -6);
+scene.add(tripod);
+
+// Scan line overlay on monitor (thin strip that moves)
+const scanGeo = new THREE.PlaneGeometry(6, 0.05);
+const scanMat = new THREE.MeshBasicMaterial({ color: 0x00ff44, transparent: true, opacity: 0.4 });
+const scanLine = new THREE.Mesh(scanGeo, scanMat);
+scanLine.position.z = 0.02;
+monitor.add(scanLine);
+
+// "REC" indicator
+const recGeo = new THREE.CircleGeometry(0.12, 16);
+const recMat = new THREE.MeshBasicMaterial({ color: 0xff2222 });
+const rec = new THREE.Mesh(recGeo, recMat);
+rec.position.set(-2.6, 1.7, 0.02);
+monitor.add(rec);
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  animatedMeshes.forEach((m, i) => {
+    m.rotation.y = t * (0.4 + i * 0.1);
+    m.rotation.x = t * 0.2;
+    m.position.y = 1 + Math.sin(t * 1.5 + i * 2) * 0.3;
+  });
+
+  // Scan line animation
+  scanLine.position.y = Math.sin(t * 0.8) * 1.8;
+
+  // REC blink
+  recMat.color.setHex((Math.floor(t * 2) % 2 === 0) ? 0xff2222 : 0x440000);
+
+  // Render scene to RenderTarget first (security camera view)
+  renderer.setRenderTarget(renderTarget);
+  renderer.render(scene, secCamera);
+  renderer.setRenderTarget(null);
+
+  // Render main scene
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

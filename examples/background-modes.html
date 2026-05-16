@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js — Background Modes</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; overflow: hidden; font-family: monospace; }
+#info { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  color: #ccc; font-size: 13px; background: rgba(0,0,0,.65); padding: 6px 16px; border-radius: 6px; white-space: nowrap; }
+#controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; }
+button { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #555;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
+</style>
+</head>
+<body>
+<div id="info">Three.js Scene Backgrounds — Solid Color · Gradient Texture · Procedural Sky · CubeMap</div>
+<div id="controls">
+  <button id="btn0" class="active">Solid Color</button>
+  <button id="btn1">Gradient</button>
+  <button id="btn2">Sky Gradient</button>
+  <button id="btn3">CubeMap</button>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene    = new THREE.Scene();
+const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 500);
+camera.position.set(0, 2, 10);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const dLight = new THREE.DirectionalLight(0xffffff, 2);
+dLight.position.set(5, 10, 5);
+scene.add(dLight);
+
+// Scene objects
+const objs = [
+  new THREE.Mesh(new THREE.TorusKnotGeometry(1, 0.35, 128, 16), new THREE.MeshStandardMaterial({ color: 0xff6644, roughness: 0.3, metalness: 0.6 })),
+  new THREE.Mesh(new THREE.SphereGeometry(0.8, 32, 32), new THREE.MeshStandardMaterial({ color: 0x44aaff, roughness: 0.1, metalness: 0.8 })),
+  new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), new THREE.MeshStandardMaterial({ color: 0x88ff44, roughness: 0.5, metalness: 0.2 })),
+];
+objs[0].position.set(-3, 0, 0);
+objs[1].position.set( 0, 0, 0);
+objs[2].position.set( 3, 0, 0);
+objs.forEach(o => scene.add(o));
+
+// Ground plane
+scene.add(new THREE.Mesh(
+  new THREE.PlaneGeometry(30, 30),
+  new THREE.MeshStandardMaterial({ color: 0x333344, roughness: 0.9 })
+).rotateX(-Math.PI / 2).translateZ(0));
+const floor = scene.children[scene.children.length - 1];
+floor.position.y = -1.5;
+
+// --- Background modes ---
+
+// 1. Solid color
+function setBgSolid() {
+  scene.background = new THREE.Color(0x1a1a2e);
+  scene.environment = null;
+}
+
+// 2. Canvas gradient texture
+function makePanoGradient(top, bottom) {
+  const w = 2, h = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, top);
+  grad.addColorStop(1, bottom);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  return tex;
+}
+
+function setBgGradient() {
+  scene.background = makePanoGradient('#0a0020', '#1a0050');
+}
+
+// 3. Sky-like gradient
+function setBgSky() {
+  scene.background = makePanoGradient('#87ceeb', '#ff8c00');
+}
+
+// 4. Procedural CubeMap
+function makeCubeMap() {
+  const faceColors = [0xff4444, 0x44ff44, 0x4488ff, 0xffff44, 0xff44ff, 0x44ffff];
+  const faceCanvases = faceColors.map(color => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 256;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#' + color.toString(16).padStart(6, '0');
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    for (let i = 0; i < 20; i++) {
+      ctx.beginPath();
+      ctx.arc(Math.random()*256, Math.random()*256, Math.random()*30+5, 0, Math.PI*2);
+      ctx.fill();
+    }
+    return c;
+  });
+  return new THREE.CubeTexture(faceCanvases);
+}
+
+function setBgCubeMap() {
+  const cube = makeCubeMap();
+  cube.needsUpdate = true;
+  scene.background = cube;
+}
+
+// Button wiring
+const modes = [setBgSolid, setBgGradient, setBgSky, setBgCubeMap];
+[0,1,2,3].forEach(i => {
+  document.getElementById('btn' + i).addEventListener('click', e => {
+    [0,1,2,3].forEach(j => document.getElementById('btn' + j).classList.toggle('active', i === j));
+    modes[i]();
+  });
+});
+setBgSolid();
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  objs.forEach((o, i) => { o.rotation.y = t * (0.3 + i * 0.1); o.rotation.x = t * 0.1; });
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>
