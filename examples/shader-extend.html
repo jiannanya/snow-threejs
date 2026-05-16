@@ -62,55 +62,83 @@ function buildMaterial(mode) {
     color: 0x4488cc, roughness: 0.4, metalness: 0.3,
   });
   mat.userData.mode = mode;
+  mat.transparent = mode === 'xray';
+  mat.depthWrite = mode !== 'xray';
+  mat.side = mode === 'xray' ? THREE.DoubleSide : THREE.FrontSide;
 
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = timeUniforms.uTime;
-    // Add uniform declaration
-    shader.vertexShader = 'uniform float uTime;\n' + shader.vertexShader;
-    shader.fragmentShader = 'uniform float uTime;\n' + shader.fragmentShader;
 
-    if (mode === 'ripple') {
-      // UV ripple distortion in vertex
-      shader.vertexShader = shader.vertexShader.replace(
-        '#include <uv_vertex>',
-        `#include <uv_vertex>
-         vMapUv = vMapUv + vec2(sin(vMapUv.y * 10.0 + uTime * 2.0) * 0.05, 0.0);`
-      );
-    } else if (mode === 'noise') {
-      // Dissolve by noise threshold in fragment
-      shader.fragmentShader = shader.fragmentShader.replace(
-        'void main() {',
-        `float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-         float noise2(vec2 p){vec2 i=floor(p);vec2 f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
-         void main() {`
-      );
+    const vertexHeader = `#include <common>
+      uniform float uTime;
+      varying vec3 vFxPos;
+      varying vec3 vFxNormal;`;
+    const vertexBody = mode === 'ripple'
+      ? `#include <begin_vertex>
+         float fxWave = sin(position.y * 4.0 + uTime * 2.0) * 0.15;
+         transformed += normal * fxWave;
+         vFxPos = transformed;
+         vFxNormal = normalize(normalMatrix * normal);`
+      : `#include <begin_vertex>
+         vFxPos = transformed;
+         vFxNormal = normalize(normalMatrix * normal);`;
+
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', vertexHeader)
+      .replace('#include <begin_vertex>', vertexBody);
+
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <common>',
+      `#include <common>
+       uniform float uTime;
+       varying vec3 vFxPos;
+       varying vec3 vFxNormal;
+       float fxHash(vec2 p) {
+         return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+       }
+       float fxNoise(vec2 p) {
+         vec2 i = floor(p);
+         vec2 f = fract(p);
+         f = f * f * (3.0 - 2.0 * f);
+         return mix(
+           mix(fxHash(i), fxHash(i + vec2(1.0, 0.0)), f.x),
+           mix(fxHash(i + vec2(0.0, 1.0)), fxHash(i + vec2(1.0, 1.0)), f.x),
+           f.y
+         );
+       }`
+    );
+
+    if (mode === 'noise') {
       shader.fragmentShader = shader.fragmentShader.replace(
         'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
-        `float n=noise2(vMapUv*6.0+uTime*0.5);
-         if(n < 0.4+sin(uTime)*0.3) discard;
+        `float n = fxNoise(vFxPos.xy * 2.2 + uTime * 0.5);
+         if (n < 0.35 + sin(uTime) * 0.2) discard;
          gl_FragColor = vec4( outgoingLight, diffuseColor.a );`
       );
     } else if (mode === 'rainbow') {
       shader.fragmentShader = shader.fragmentShader.replace(
         'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
-        `vec3 rainbow=vec3(sin(uTime+vMapUv.y*8.0)*0.5+0.5, sin(uTime+vMapUv.y*8.0+2.094)*0.5+0.5, sin(uTime+vMapUv.y*8.0+4.188)*0.5+0.5);
-         gl_FragColor = vec4( outgoingLight * rainbow, diffuseColor.a );`
+        `vec3 rainbow = vec3(
+           sin(uTime + vFxPos.y * 2.5) * 0.5 + 0.5,
+           sin(uTime + vFxPos.y * 2.5 + 2.094) * 0.5 + 0.5,
+           sin(uTime + vFxPos.y * 2.5 + 4.188) * 0.5 + 0.5
+         );
+         gl_FragColor = vec4( outgoingLight * mix(vec3(1.0), rainbow, 0.85), diffuseColor.a );`
       );
     } else if (mode === 'glitch') {
       shader.fragmentShader = shader.fragmentShader.replace(
         'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
-        `vec2 uvOff = vMapUv;
-         float glitch = step(0.98, fract(sin(floor(vMapUv.y*20.0 + uTime*3.0)*127.1)*43758.5));
-         uvOff.x += glitch * 0.1 * sin(uTime*50.0);
-         gl_FragColor = vec4( outgoingLight * (1.0 + glitch * 2.0), diffuseColor.a );`
+        `float band = floor((vFxPos.y + 2.0) * 6.0);
+         float glitch = step(0.82, fxHash(vec2(band, floor(uTime * 12.0))));
+         vec3 glitchTint = mix(vec3(1.0), vec3(1.8, 0.7, 1.3), glitch);
+         gl_FragColor = vec4( outgoingLight * glitchTint, diffuseColor.a );`
       );
     } else if (mode === 'xray') {
-      mat.transparent = true;
       shader.fragmentShader = shader.fragmentShader.replace(
         'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
-        `float rim = 1.0 - abs(dot(normalize(vNormal), normalize(vec3(0,0,1))));
-         rim = pow(rim, 2.5);
-         vec3 xrayColor = vec3(0.2, 0.8, 1.0) * rim;
+        `float rim = 1.0 - abs(normalize(vFxNormal).z);
+         rim = pow(max(rim, 0.0), 2.5);
+         vec3 xrayColor = vec3(0.2, 0.8, 1.0) * (0.3 + rim);
          gl_FragColor = vec4( xrayColor, rim * 0.9 );`
       );
     }

@@ -55,37 +55,37 @@ scene.add(new THREE.GridHelper(30, 30, 0x111133, 0x0d0d22));
 // ─── Particle pool ────────────────────────────────────────────────────
 const MAX_PARTICLES = 5000;
 const positions = new Float32Array(MAX_PARTICLES * 3);
-const colors    = new Float32Array(MAX_PARTICLES * 3);
+const particleColors = new Float32Array(MAX_PARTICLES * 3);
 const sizes     = new Float32Array(MAX_PARTICLES);
 
 const pGeo = new THREE.BufferGeometry();
 pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-pGeo.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
+pGeo.setAttribute('particleColor', new THREE.BufferAttribute(particleColors, 3));
 pGeo.setAttribute('size',     new THREE.BufferAttribute(sizes, 1));
 
 const pMat = new THREE.ShaderMaterial({
   vertexShader: `
     attribute float size;
-    attribute vec3 color;
-    varying vec3 vColor;
+    attribute vec3 particleColor;
+    varying vec3 vParticleColor;
     void main() {
-      vColor = color;
+      vParticleColor = particleColor;
       vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
       gl_PointSize = size * (300.0 / -mvPos.z);
       gl_Position = projectionMatrix * mvPos;
     }
   `,
   fragmentShader: `
-    varying vec3 vColor;
+    varying vec3 vParticleColor;
     void main() {
       float d = length(gl_PointCoord - 0.5) * 2.0;
       if (d > 1.0) discard;
       float a = 1.0 - smoothstep(0.5, 1.0, d);
-      gl_FragColor = vec4(vColor, a);
+      gl_FragColor = vec4(vParticleColor, a);
     }
   `,
   transparent: true, depthWrite: false,
-  blending: THREE.AdditiveBlending, vertexColors: true,
+  blending: THREE.AdditiveBlending,
 });
 const pSystem = new THREE.Points(pGeo, pMat);
 scene.add(pSystem);
@@ -190,7 +190,7 @@ renderer.setAnimationLoop(() => {
   pool.forEach(p => {
     if (!p.active) {
       positions[idx*3] = positions[idx*3+1] = positions[idx*3+2] = 0;
-      colors[idx*3] = colors[idx*3+1] = colors[idx*3+2] = 0;
+      particleColors[idx*3] = particleColors[idx*3+1] = particleColors[idx*3+2] = 0;
       sizes[idx] = 0;
     } else {
       p.life += dt;
@@ -203,16 +203,16 @@ renderer.setAnimationLoop(() => {
       positions[idx*3]   = p.px;
       positions[idx*3+1] = p.py;
       positions[idx*3+2] = p.pz;
-      colors[idx*3]   = p.r * fade;
-      colors[idx*3+1] = p.g * fade;
-      colors[idx*3+2] = p.b * fade;
+      particleColors[idx*3]   = p.r * fade;
+      particleColors[idx*3+1] = p.g * fade;
+      particleColors[idx*3+2] = p.b * fade;
       sizes[idx] = p.size;
     }
     idx++;
   });
 
   pGeo.attributes.position.needsUpdate = true;
-  pGeo.attributes.color.needsUpdate    = true;
+  pGeo.attributes.particleColor.needsUpdate = true;
   pGeo.attributes.size.needsUpdate     = true;
 
   controls.update();

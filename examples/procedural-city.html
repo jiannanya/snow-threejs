@@ -36,8 +36,11 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const scene    = new THREE.Scene();
-scene.background = new THREE.Color(0x020308);
-scene.fog = new THREE.FogExp2(0x020308, 0.012);
+const NIGHT_SKY = new THREE.Color(0x020308);
+const DAY_SKY = new THREE.Color(0xaed2ff);
+const DAY_FOG = new THREE.Color(0xdce7f2);
+scene.background = NIGHT_SKY.clone();
+scene.fog = new THREE.FogExp2(NIGHT_SKY.getHex(), 0.012);
 const camera   = new THREE.PerspectiveCamera(65, innerWidth/innerHeight, 0.1, 300);
 camera.position.set(0, 25, 60);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -61,6 +64,35 @@ scene.add(ambientLight);
 const moonLight = new THREE.DirectionalLight(0x8899cc, 0.4);
 moonLight.position.set(-20, 50, -20);
 scene.add(moonLight);
+const dayAmbientLight = new THREE.HemisphereLight(0xcfe6ff, 0xcbb18a, 0);
+scene.add(dayAmbientLight);
+const sunLight = new THREE.DirectionalLight(0xfff1c2, 0);
+sunLight.position.set(30, 55, 20);
+sunLight.castShadow = true;
+scene.add(sunLight);
+
+function applyLightingMode() {
+  if (nightMode) {
+    scene.background.copy(NIGHT_SKY);
+    scene.fog.color.copy(NIGHT_SKY);
+    scene.fog.density = 0.012;
+    ambientLight.color.setHex(0x111133);
+    ambientLight.intensity = 0.5;
+    moonLight.intensity = 0.4;
+    dayAmbientLight.intensity = 0;
+    sunLight.intensity = 0;
+    return;
+  }
+
+  scene.background.copy(DAY_SKY);
+  scene.fog.color.copy(DAY_FOG);
+  scene.fog.density = 0.008;
+  ambientLight.color.setHex(0xf4f0e4);
+  ambientLight.intensity = 0.9;
+  moonLight.intensity = 0.05;
+  dayAmbientLight.intensity = 1.2;
+  sunLight.intensity = 1.7;
+}
 
 function buildCity() {
   // Clear previous
@@ -75,14 +107,18 @@ function buildCity() {
   const TOTAL = SIZE * CELL;
 
   // Ground (roads)
-  const groundMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.95 });
+  const groundMat = new THREE.MeshStandardMaterial({
+    color: nightMode ? 0x111118 : 0xa3adb8,
+    roughness: 0.95,
+    metalness: nightMode ? 0.05 : 0.12,
+  });
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(TOTAL+20, TOTAL+20), groundMat);
   ground.rotation.x = -Math.PI/2;
   ground.receiveShadow = true;
   cityGroup.add(ground);
 
   // Road lines
-  const roadMat = new THREE.LineBasicMaterial({ color: 0x334433 });
+  const roadMat = new THREE.LineBasicMaterial({ color: nightMode ? 0x334433 : 0xe8edf3 });
   for (let i = 0; i <= SIZE; i++) {
     const x = i * CELL - TOTAL/2;
     const pts = [new THREE.Vector3(x, 0.01, -TOTAL/2), new THREE.Vector3(x, 0.01, TOTAL/2)];
@@ -92,7 +128,9 @@ function buildCity() {
   }
 
   // Buildings
-  const buildingColors = [0x223344,0x334455,0x1a2a3a,0x2a3a4a,0x3a2a1a,0x1a3a2a];
+  const buildingColors = nightMode
+    ? [0x223344,0x334455,0x1a2a3a,0x2a3a4a,0x3a2a1a,0x1a3a2a]
+    : [0xb4bec8,0xc7d1db,0xa6b3c0,0xd7d2c7,0xb7c7d8,0xc8c2b8];
   const windowColor = nightMode ? 0xffee88 : 0x88aacc;
 
   for (let row = 0; row < SIZE; row++) {
@@ -150,6 +188,7 @@ function buildCity() {
   }
 }
 
+applyLightingMode();
 buildCity();
 
 document.getElementById('btnRegen').addEventListener('click', buildCity);
@@ -160,7 +199,7 @@ document.getElementById('btnFly').addEventListener('click', e => {
 });
 document.getElementById('btnNight').addEventListener('click', e => {
   nightMode = !nightMode;
-  ambientLight.intensity = nightMode ? 0.5 : 2;
+  applyLightingMode();
   e.currentTarget.classList.toggle('active', nightMode);
   buildCity();
 });

@@ -33,7 +33,6 @@ button.active { background: rgba(80,200,255,.3); border-color: #50c8ff; }
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls }  from 'three/addons/controls/OrbitControls.js';
-import { SkeletonHelper } from 'three/addons/helpers/SkeletonHelper.js';
 
 const scene    = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0a18);
@@ -102,7 +101,7 @@ skinnedMesh.bind(skeleton);
 scene.add(skinnedMesh);
 
 // Skeleton helper (shows bones as lines)
-const skeletonHelper = new SkeletonHelper(skinnedMesh);
+const skeletonHelper = new THREE.SkeletonHelper(skinnedMesh);
 skeletonHelper.material.linewidth = 2;
 scene.add(skeletonHelper);
 
