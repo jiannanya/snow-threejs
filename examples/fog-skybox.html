@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js - Fog & Skybox</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; font-family: monospace; }
+    #info {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 13px;
+      background: rgba(0,0,0,0.5); padding: 8px 16px; border-radius: 4px;
+    }
+    #panel {
+      position: fixed; top: 60px; right: 16px;
+      background: rgba(0,0,0,0.75); color: #fff; font-size: 12px;
+      padding: 12px 16px; border-radius: 6px; min-width: 230px; line-height: 2.2;
+    }
+    #panel input[type=range] { width: 130px; vertical-align: middle; }
+    select { background: #223; color: #fff; border: 1px solid #446; padding: 2px 6px; }
+  </style>
+</head>
+<body>
+  <div id="info">Three.js Fog & Sky — 雾效与天空盒</div>
+  <div id="panel">
+    <b>Fog Settings</b><br>
+    Type:
+    <select id="fogType">
+      <option value="linear">Linear Fog</option>
+      <option value="exp2" selected>FogExp2</option>
+      <option value="none">None</option>
+    </select><br>
+    Near/Density: <input type="range" id="fogNear"    min="1"     max="80"    step="1"    value="10"><br>
+    Far:          <input type="range" id="fogFar"     min="20"    max="200"   step="5"    value="80"><br>
+    Density:      <input type="range" id="fogDensity" min="0.001" max="0.1"   step="0.001" value="0.025"><br>
+    <b>Sky</b><br>
+    Preset:
+    <select id="sky">
+      <option value="day">Day</option>
+      <option value="sunset">Sunset</option>
+      <option value="night" selected>Night</option>
+      <option value="overcast">Overcast</option>
+    </select><br>
+    <label><input type="checkbox" id="autoWalk" checked> Auto-walk</label>
+  </div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const skyPresets = {
+      day:      { bg: 0x87ceeb, fog: 0x87ceeb, ambient: 0xddddff, light: 0xffffff, lightInt: 3 },
+      sunset:   { bg: 0xff6622, fog: 0xdd4411, ambient: 0xff9933, light: 0xff8844, lightInt: 2 },
+      night:    { bg: 0x050514, fog: 0x050514, ambient: 0x112244, light: 0x6688cc, lightInt: 0.8 },
+      overcast: { bg: 0x888899, fog: 0x888899, ambient: 0xaaaaaa, light: 0xffffff, lightInt: 1 },
+    };
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 500);
+    camera.position.set(0, 2, 0);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0, 2, -10);
+
+    let preset = skyPresets.night;
+    const ambLight = new THREE.AmbientLight(preset.ambient, 1.5);
+    scene.add(ambLight);
+    const sunLight = new THREE.DirectionalLight(preset.light, preset.lightInt);
+    sunLight.position.set(50, 80, -30);
+    sunLight.castShadow = true;
+    sunLight.shadow.camera.far = 300;
+    sunLight.shadow.camera.left = -80; sunLight.shadow.camera.right = 80;
+    sunLight.shadow.camera.top = 80;  sunLight.shadow.camera.bottom = -80;
+    scene.add(sunLight);
+
+    function applyPreset(name) {
+      preset = skyPresets[name];
+      scene.background = new THREE.Color(preset.bg);
+      ambLight.color.set(preset.ambient);
+      sunLight.color.set(preset.light);
+      sunLight.intensity = preset.lightInt;
+      applyFog();
+    }
+
+    function applyFog() {
+      const fogType = document.getElementById('fogType').value;
+      const color = new THREE.Color(preset.fog);
+      if (fogType === 'linear') {
+        const near = parseFloat(document.getElementById('fogNear').value);
+        const far  = parseFloat(document.getElementById('fogFar').value);
+        scene.fog = new THREE.Fog(color, near, far);
+      } else if (fogType === 'exp2') {
+        const density = parseFloat(document.getElementById('fogDensity').value);
+        scene.fog = new THREE.FogExp2(color, density);
+      } else {
+        scene.fog = null;
+      }
+    }
+
+    applyPreset('night');
+
+    // ── Ground ─────────────────────────────────────────────────────────────
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x336633, roughness: 0.9 });
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), groundMat);
+    ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+    scene.add(ground);
+    scene.add(new THREE.GridHelper(400, 80, 0x224422, 0x1a331a));
+
+    // ── Trees & Objects ───────────────────────────────────────────────────
+    function addTree(x, z) {
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.15, 0.25, 2, 8),
+        new THREE.MeshStandardMaterial({ color: 0x5c3d1e, roughness: 0.9 })
+      );
+      trunk.position.set(x, 1, z); trunk.castShadow = true;
+      scene.add(trunk);
+      const h = 3 + Math.random() * 2, hue = 0.3 + Math.random() * 0.05;
+      for (let i = 0; i < 3; i++) {
+        const foliage = new THREE.Mesh(
+          new THREE.ConeGeometry(1.2 - i * 0.2, h * 0.5, 8),
+          new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(hue, 0.7, 0.25 + i*0.05), roughness: 0.8 })
+        );
+        foliage.position.set(x, 2 + i * (h * 0.4), z);
+        foliage.castShadow = true;
+        scene.add(foliage);
+      }
+    }
+
+    // Street
+    const road = new THREE.Mesh(new THREE.PlaneGeometry(8, 500),
+      new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.95 }));
+    road.rotation.x = -Math.PI / 2; road.position.y = 0.01;
+    scene.add(road);
+
+    // Rows of trees
+    for (let i = -20; i <= 20; i++) {
+      addTree(-6 + Math.random() * 1.5 - 0.75, i * 6);
+      addTree( 6 + Math.random() * 1.5 - 0.75, i * 6);
+    }
+
+    // Street lights
+    for (let i = -10; i <= 10; i += 2) {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 5, 6),
+        new THREE.MeshStandardMaterial({ color: 0x444444 }));
+      post.position.set(-4, 2.5, i * 6);
+      scene.add(post);
+      const light = new THREE.PointLight(0xffdd88, 1.5, 12);
+      light.position.set(-4, 5, i * 6);
+      scene.add(light);
+    }
+
+    // ── UI ────────────────────────────────────────────────────────────────
+    document.getElementById('fogType').onchange = applyFog;
+    document.getElementById('fogNear').oninput = applyFog;
+    document.getElementById('fogFar').oninput = applyFog;
+    document.getElementById('fogDensity').oninput = applyFog;
+    document.getElementById('sky').onchange = (e) => applyPreset(e.target.value);
+
+    let walk = true;
+    document.getElementById('autoWalk').onchange = e => walk = e.target.checked;
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const delta = clock.getDelta();
+      if (walk) {
+        camera.position.z -= delta * 6;
+        controls.target.z -= delta * 6;
+        if (camera.position.z < -100) { camera.position.z = 0; controls.target.z = -10; }
+      }
+      controls.update();
+      renderer.render(scene, camera);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js - Geometries Showcase</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0f; overflow: hidden; font-family: monospace; }
+    #info {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 13px;
+      background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 4px;
+    }
+    #label {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      color: #adf; font-size: 14px;
+      background: rgba(0,0,0,0.5); padding: 6px 14px; border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Three.js Geometries — 所有内置几何体展示 | 拖拽旋转视图</div>
+  <div id="label">---</div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a1a);
+    scene.fog = new THREE.FogExp2(0x0a0a1a, 0.04);
+
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+    camera.position.set(0, 8, 20);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0, 0, 0);
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0x334466, 1));
+    const dir1 = new THREE.DirectionalLight(0xffffff, 2);
+    dir1.position.set(10, 20, 10);
+    scene.add(dir1);
+    const dir2 = new THREE.DirectionalLight(0x4466ff, 1);
+    dir2.position.set(-10, -5, -10);
+    scene.add(dir2);
+
+    // Geometry list
+    const geos = [
+      { name: 'BoxGeometry',          geo: new THREE.BoxGeometry(1.5, 1.5, 1.5) },
+      { name: 'SphereGeometry',       geo: new THREE.SphereGeometry(0.8, 32, 32) },
+      { name: 'CylinderGeometry',     geo: new THREE.CylinderGeometry(0.5, 0.7, 1.5, 32) },
+      { name: 'ConeGeometry',         geo: new THREE.ConeGeometry(0.7, 1.5, 32) },
+      { name: 'TorusGeometry',        geo: new THREE.TorusGeometry(0.6, 0.25, 16, 64) },
+      { name: 'TorusKnotGeometry',    geo: new THREE.TorusKnotGeometry(0.5, 0.18, 100, 16) },
+      { name: 'IcosahedronGeometry',  geo: new THREE.IcosahedronGeometry(0.9, 0) },
+      { name: 'OctahedronGeometry',   geo: new THREE.OctahedronGeometry(0.9) },
+      { name: 'DodecahedronGeometry', geo: new THREE.DodecahedronGeometry(0.9) },
+      { name: 'TetrahedronGeometry',  geo: new THREE.TetrahedronGeometry(0.9) },
+      { name: 'CapsuleGeometry',      geo: new THREE.CapsuleGeometry(0.4, 1, 8, 16) },
+      { name: 'PlaneGeometry',        geo: new THREE.PlaneGeometry(1.5, 1.5, 4, 4) },
+      { name: 'RingGeometry',         geo: new THREE.RingGeometry(0.3, 0.9, 32) },
+      { name: 'CircleGeometry',       geo: new THREE.CircleGeometry(0.9, 32) },
+      { name: 'LatheGeometry',        geo: (() => {
+          const pts = [];
+          for (let i = 0; i < 10; i++) {
+            const a = (i / 9) * Math.PI;
+            pts.push(new THREE.Vector2(Math.sin(a) * 0.6 + 0.2, Math.cos(a)));
+          }
+          return new THREE.LatheGeometry(pts, 32);
+        })() },
+    ];
+
+    const cols = 5;
+    const spacing = 4;
+    const meshes = [];
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x88aaff, roughness: 0.4, metalness: 0.5,
+    });
+    const wireLineMat = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.15, transparent: true });
+
+    geos.forEach(({ name, geo }, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const mat = material.clone();
+      mat.color.setHSL(i / geos.length, 0.7, 0.6);
+
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(
+        (col - (cols - 1) / 2) * spacing,
+        -(row * spacing),
+        0
+      );
+      mesh.userData.name = name;
+      scene.add(mesh);
+      meshes.push(mesh);
+
+      // wireframe
+      const wire = new THREE.LineSegments(new THREE.EdgesGeometry(geo), wireLineMat.clone());
+      mesh.add(wire);
+    });
+
+    // Raycasting for label
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const labelEl = document.getElementById('label');
+
+    window.addEventListener('mousemove', (e) => {
+      pointer.x = (e.clientX / innerWidth) * 2 - 1;
+      pointer.y = -(e.clientY / innerHeight) * 2 + 1;
+    });
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const t = clock.getElapsedTime();
+      meshes.forEach((m, i) => {
+        m.rotation.y = t * 0.3 + i * 0.5;
+        m.rotation.x = t * 0.15;
+      });
+
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(meshes);
+      labelEl.textContent = hits.length ? hits[0].object.userData.name : '---';
+
+      controls.update();
+      renderer.render(scene, camera);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>

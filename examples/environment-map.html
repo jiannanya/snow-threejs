@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js - Environment Map</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; font-family: monospace; }
+    #info {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 13px;
+      background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 4px;
+    }
+    #panel {
+      position: fixed; top: 60px; right: 16px;
+      background: rgba(0,0,0,0.75); color: #fff; font-size: 12px;
+      padding: 12px 16px; border-radius: 6px; min-width: 220px; line-height: 2.2;
+    }
+    #panel input[type=range] { width: 130px; vertical-align: middle; }
+  </style>
+</head>
+<body>
+  <div id="info">Three.js Environment Map — PMREMGenerator + Reflections</div>
+  <div id="panel">
+    <b>Materials</b><br>
+    Roughness:  <input type="range" id="rough"   min="0"   max="1" step="0.01" value="0.1"><br>
+    Metalness:  <input type="range" id="metal"   min="0"   max="1" step="0.01" value="1.0"><br>
+    Env Intens: <input type="range" id="envInt"  min="0"   max="5" step="0.1"  value="1.5"><br>
+    Exposure:   <input type="range" id="exposure" min="0.1" max="4" step="0.1"  value="1.5"><br>
+    <label><input type="checkbox" id="showBg" checked> Show BG</label><br>
+    Palette:
+    <select id="palette">
+      <option value="studio">Studio</option>
+      <option value="sunset">Sunset</option>
+      <option value="night">Night City</option>
+    </select>
+  </div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.5;
+    document.body.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+    camera.position.set(0, 2, 8);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    // ── Build equirectangular env texture from canvas ─────────────────────
+    const palettes = {
+      studio: [
+        { y: 0.0, top: '#1a1a2e', bot: '#1a1a2e' },
+        { y: 0.45, top: '#2d2d4e', bot: '#2d2d4e' },
+        { y: 0.5,  top: '#ffffff', bot: '#ffffff' },  // bright band = key light
+        { y: 0.52, top: '#aaaaee', bot: '#aaaaee' },
+        { y: 1.0,  top: '#0a0a1a', bot: '#0a0a1a' },
+      ],
+      sunset: [
+        { y: 0.0,  col: '#0d0d1a' },
+        { y: 0.35, col: '#0d1a3a' },
+        { y: 0.45, col: '#ff6600' },
+        { y: 0.5,  col: '#ffcc00' },
+        { y: 0.55, col: '#ff4400' },
+        { y: 0.65, col: '#1a0d00' },
+        { y: 1.0,  col: '#060610' },
+      ],
+      night: [
+        { y: 0.0,  col: '#050510' },
+        { y: 0.4,  col: '#0a0a20' },
+        { y: 0.48, col: '#002266' },
+        { y: 0.5,  col: '#0044ff' },
+        { y: 0.52, col: '#00aaff' },
+        { y: 0.6,  col: '#ff4400' },
+        { y: 0.7,  col: '#220011' },
+        { y: 1.0,  col: '#050510' },
+      ],
+    };
+
+    function makePanoTexture(name) {
+      const W = 1024, H = 512;
+      const cvs = document.createElement('canvas');
+      cvs.width = W; cvs.height = H;
+      const ctx = cvs.getContext('2d');
+      const stops = palettes[name];
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      stops.forEach(s => grad.addColorStop(s.y, s.col || s.top || s.bot));
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Add bright light spots
+      if (name === 'studio') {
+        const grd = ctx.createRadialGradient(W/2, H*0.5, 0, W/2, H*0.5, 200);
+        grd.addColorStop(0, 'rgba(255,255,255,0.9)');
+        grd.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, W, H);
+      }
+      if (name === 'night') {
+        for (let i = 0; i < 200; i++) {
+          const sx = Math.random() * W, sy = Math.random() * H * 0.45;
+          const r = Math.random() * 1.5 + 0.5;
+          const g2 = ctx.createRadialGradient(sx,sy,0, sx,sy,r*3);
+          g2.addColorStop(0, `rgba(255,255,200,${Math.random() * 0.8 + 0.2})`);
+          g2.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = g2;
+          ctx.beginPath(); ctx.arc(sx, sy, r*3, 0, Math.PI*2); ctx.fill();
+        }
+      }
+
+      return new THREE.CanvasTexture(cvs, THREE.EquirectangularReflectionMapping);
+    }
+
+    function applyEnv(paletteName) {
+      const tex = makePanoTexture(paletteName);
+      const pmremGen = new THREE.PMREMGenerator(renderer);
+      pmremGen.compileEquirectangularShader();
+      const envMap = pmremGen.fromEquirectangular(tex).texture;
+      pmremGen.dispose(); tex.dispose();
+      scene.environment = envMap;
+      scene.background = document.getElementById('showBg').checked ? envMap : null;
+    }
+
+    applyEnv('studio');
+
+    // ── Objects ────────────────────────────────────────────────────────────
+    const meshes = [];
+    const configs = [
+      { geo: new THREE.SphereGeometry(0.9, 64, 64),   pos: [-4,  1, 0], rough: 0.0, metal: 1.0, color: 0xffffff },
+      { geo: new THREE.SphereGeometry(0.9, 64, 64),   pos: [-2,  1, 0], rough: 0.1, metal: 1.0, color: 0xff8844 },
+      { geo: new THREE.SphereGeometry(0.9, 64, 64),   pos: [ 0,  1, 0], rough: 0.3, metal: 0.9, color: 0x44aaff },
+      { geo: new THREE.SphereGeometry(0.9, 64, 64),   pos: [ 2,  1, 0], rough: 0.6, metal: 0.5, color: 0x44ff88 },
+      { geo: new THREE.SphereGeometry(0.9, 64, 64),   pos: [ 4,  1, 0], rough: 1.0, metal: 0.0, color: 0xffffff },
+      { geo: new THREE.TorusKnotGeometry(0.6, 0.25, 120, 16), pos: [0, -1.2, 2], rough: 0.05, metal: 1.0, color: 0xddcc88 },
+    ];
+
+    configs.forEach(cfg => {
+      const mat = new THREE.MeshStandardMaterial({ color: cfg.color, roughness: cfg.rough, metalness: cfg.metal });
+      const mesh = new THREE.Mesh(cfg.geo, mat);
+      mesh.position.set(...cfg.pos);
+      scene.add(mesh);
+      meshes.push(mesh);
+    });
+
+    // Ground plane
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20),
+      new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.3, metalness: 0.8 }));
+    floor.rotation.x = -Math.PI / 2; floor.position.y = 0;
+    scene.add(floor);
+
+    // ── UI ────────────────────────────────────────────────────────────────
+    document.getElementById('rough').oninput = (e) => {
+      meshes.forEach(m => m.material.roughness = parseFloat(e.target.value));
+    };
+    document.getElementById('metal').oninput = (e) => {
+      meshes.forEach(m => m.material.metalness = parseFloat(e.target.value));
+    };
+    document.getElementById('envInt').oninput = (e) => {
+      scene.environmentIntensity = parseFloat(e.target.value);
+    };
+    document.getElementById('exposure').oninput = (e) => {
+      renderer.toneMappingExposure = parseFloat(e.target.value);
+    };
+    document.getElementById('showBg').onchange = (e) => {
+      scene.background = e.target.checked ? scene.environment : null;
+    };
+    document.getElementById('palette').onchange = (e) => applyEnv(e.target.value);
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const t = clock.getElapsedTime();
+      meshes[5].rotation.y = t * 0.5;
+      meshes[5].rotation.x = t * 0.3;
+      controls.update();
+      renderer.render(scene, camera);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>

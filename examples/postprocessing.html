@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js - Post Processing</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; font-family: monospace; }
+    #info {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 13px;
+      background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 4px;
+    }
+    #panel {
+      position: fixed; top: 60px; right: 16px;
+      background: rgba(0,0,0,0.8); color: #fff; font-size: 12px;
+      padding: 12px 16px; border-radius: 6px; min-width: 230px; line-height: 2.2;
+    }
+    #panel input[type=range] { width: 130px; vertical-align: middle; }
+    label { display: block; }
+    .toggle-off { color: #666; }
+  </style>
+</head>
+<body>
+  <div id="info">Three.js Post-processing — EffectComposer + Passes</div>
+  <div id="panel">
+    <b>Effect Passes</b><br>
+    <label><input type="checkbox" id="bloom" checked> Bloom</label>
+    Threshold:<input type="range" id="bloomThresh" min="0" max="1" step="0.01" value="0.2"><br>
+    Strength: <input type="range" id="bloomStr"    min="0" max="5" step="0.1"  value="1.5"><br>
+    Radius:   <input type="range" id="bloomRad"    min="0" max="1" step="0.01" value="0.4"><br>
+    <label><input type="checkbox" id="film" checked> Film Grain</label>
+    <label><input type="checkbox" id="glitch"> Glitch</label>
+    <label><input type="checkbox" id="dot"> Dot Screen</label>
+    <label><input type="checkbox" id="rgb"> RGB Shift</label>
+    <hr style="border-color:#334;margin:6px 0">
+    <label><input type="checkbox" id="rawRender"> Bypass (raw render)</label>
+  </div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { EffectComposer }   from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass }       from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass }  from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { FilmPass }         from 'three/addons/postprocessing/FilmPass.js';
+    import { GlitchPass }       from 'three/addons/postprocessing/GlitchPass.js';
+    import { DotScreenPass }    from 'three/addons/postprocessing/DotScreenPass.js';
+    import { ShaderPass }       from 'three/addons/postprocessing/ShaderPass.js';
+    import { RGBShiftShader }   from 'three/addons/shaders/RGBShiftShader.js';
+    import { OutputPass }       from 'three/addons/postprocessing/OutputPass.js';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x020208);
+    scene.fog = new THREE.FogExp2(0x020208, 0.04);
+
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+    camera.position.set(0, 4, 14);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    renderer.toneMapping = THREE.ReinhardToneMapping;
+    renderer.toneMappingExposure = 1.5;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    scene.add(new THREE.AmbientLight(0x111133, 1));
+
+    // ── Scene Objects ──────────────────────────────────────────────────────
+    const objects = [];
+    for (let i = 0; i < 30; i++) {
+      const hue = i / 30;
+      const mat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color().setHSL(hue, 1, 0.5),
+        emissive: new THREE.Color().setHSL(hue, 1, 0.3),
+        roughness: 0.3, metalness: 0.6,
+      });
+      const geos = [
+        new THREE.BoxGeometry(0.8, 0.8, 0.8),
+        new THREE.SphereGeometry(0.5, 16, 16),
+        new THREE.TorusGeometry(0.4, 0.18, 12, 30),
+      ];
+      const mesh = new THREE.Mesh(geos[i % 3], mat);
+      const angle = (i / 30) * Math.PI * 2;
+      const r = 3 + (i % 3) * 2;
+      mesh.position.set(Math.cos(angle) * r, (Math.random() - 0.5) * 4, Math.sin(angle) * r);
+      mesh.userData.angle = angle;
+      mesh.userData.r = r;
+      mesh.userData.speed = 0.2 + Math.random() * 0.5;
+      scene.add(mesh);
+      objects.push(mesh);
+    }
+
+    // Floor
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40),
+      new THREE.MeshStandardMaterial({ color: 0x111122, roughness: 0.9 }));
+    floor.rotation.x = -Math.PI / 2; floor.position.y = -3;
+    scene.add(floor);
+
+    // ── EffectComposer ────────────────────────────────────────────────────
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.5, 0.4, 0.2);
+    composer.addPass(bloomPass);
+
+    const filmPass = new FilmPass(0.4);
+    composer.addPass(filmPass);
+
+    const glitchPass = new GlitchPass();
+    glitchPass.enabled = false;
+    composer.addPass(glitchPass);
+
+    const dotPass = new DotScreenPass(new THREE.Vector2(0, 0), 0, 0.7);
+    dotPass.enabled = false;
+    composer.addPass(dotPass);
+
+    const rgbPass = new ShaderPass(RGBShiftShader);
+    rgbPass.uniforms['amount'].value = 0.003;
+    rgbPass.enabled = false;
+    composer.addPass(rgbPass);
+
+    composer.addPass(new OutputPass());
+
+    // ── UI ─────────────────────────────────────────────────────────────────
+    document.getElementById('bloom').onchange = e => bloomPass.enabled = e.target.checked;
+    document.getElementById('bloomThresh').oninput = e => bloomPass.threshold = parseFloat(e.target.value);
+    document.getElementById('bloomStr').oninput = e => bloomPass.strength = parseFloat(e.target.value);
+    document.getElementById('bloomRad').oninput = e => bloomPass.radius = parseFloat(e.target.value);
+    document.getElementById('film').onchange = e => filmPass.enabled = e.target.checked;
+    document.getElementById('glitch').onchange = e => glitchPass.enabled = e.target.checked;
+    document.getElementById('dot').onchange = e => dotPass.enabled = e.target.checked;
+    document.getElementById('rgb').onchange = e => rgbPass.enabled = e.target.checked;
+    let bypass = false;
+    document.getElementById('rawRender').onchange = e => bypass = e.target.checked;
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const t = clock.getElapsedTime();
+      objects.forEach(m => {
+        m.rotation.x += 0.01;
+        m.rotation.y += 0.015;
+        m.position.x = Math.cos(m.userData.angle + t * m.userData.speed) * m.userData.r;
+        m.position.z = Math.sin(m.userData.angle + t * m.userData.speed) * m.userData.r;
+      });
+      controls.update();
+      if (bypass) renderer.render(scene, camera);
+      else composer.render();
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+      composer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>

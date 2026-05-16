@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js - Raycasting</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; font-family: monospace; }
+    #info {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 13px;
+      background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 4px; text-align: center;
+    }
+    #tooltip {
+      position: fixed; display: none;
+      background: rgba(0,0,0,0.75); color: #adf;
+      font-family: monospace; font-size: 12px;
+      padding: 6px 10px; border-radius: 4px; pointer-events: none;
+      border: 1px solid #336;
+    }
+    #status {
+      position: fixed; bottom: 16px; left: 16px; color: #aaa; font-size: 12px; font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Three.js Raycasting — 悬停高亮 | 点击选中 | 拖拽旋转</div>
+  <div id="tooltip"></div>
+  <div id="status">Hover over objects</div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a1a);
+
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+    camera.position.set(0, 10, 18);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    scene.add(new THREE.AmbientLight(0x334466, 1));
+    const dir = new THREE.DirectionalLight(0xffffff, 2);
+    dir.position.set(5, 10, 5); dir.castShadow = true;
+    scene.add(dir);
+
+    // Ground
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(30, 30),
+      new THREE.MeshStandardMaterial({ color: 0x112233, roughness: 1 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+    scene.add(new THREE.GridHelper(30, 30, 0x223344, 0x1a2233));
+
+    // ── Create interactive objects ────────────────────────────────────────
+    const pickable = [];
+    const geoTypes = [
+      new THREE.BoxGeometry(1.5, 1.5, 1.5),
+      new THREE.SphereGeometry(0.9, 32, 32),
+      new THREE.CylinderGeometry(0.5, 0.8, 1.8, 32),
+      new THREE.ConeGeometry(0.8, 1.8, 32),
+      new THREE.TorusGeometry(0.7, 0.28, 16, 64),
+      new THREE.IcosahedronGeometry(0.9),
+      new THREE.OctahedronGeometry(0.9),
+      new THREE.TorusKnotGeometry(0.6, 0.22, 80, 16),
+    ];
+    const objNames = ['Box', 'Sphere', 'Cylinder', 'Cone', 'Torus', 'Icosahedron', 'Octahedron', 'TorusKnot'];
+
+    for (let i = 0; i < 16; i++) {
+      const geoIdx = i % geoTypes.length;
+      const hue = i / 16;
+      const mat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color().setHSL(hue, 0.8, 0.5),
+        roughness: 0.4, metalness: 0.3,
+      });
+      mat.userData.baseColor = mat.color.clone();
+
+      const mesh = new THREE.Mesh(geoTypes[geoIdx].clone(), mat);
+      const col = i % 4, row = Math.floor(i / 4);
+      mesh.position.set((col - 1.5) * 4, 1.2, (row - 1.5) * 4);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.userData.name = `${objNames[geoIdx]} #${i + 1}`;
+      mesh.userData.index = i;
+      scene.add(mesh);
+      pickable.push(mesh);
+    }
+
+    // ── Raycaster ──────────────────────────────────────────────────────────
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const tooltip = document.getElementById('tooltip');
+    const status = document.getElementById('status');
+
+    let hovered = null;
+    let selected = null;
+
+    window.addEventListener('mousemove', (e) => {
+      pointer.x = (e.clientX / innerWidth) * 2 - 1;
+      pointer.y = -(e.clientY / innerHeight) * 2 + 1;
+      tooltip.style.left = (e.clientX + 14) + 'px';
+      tooltip.style.top = (e.clientY - 10) + 'px';
+    });
+
+    window.addEventListener('click', () => {
+      if (hovered) {
+        if (selected && selected !== hovered) {
+          selected.material.emissive.set(0x000000);
+        }
+        selected = hovered;
+        selected.material.emissive.setHex(0x222266);
+        status.textContent = `Selected: ${selected.userData.name}`;
+      } else if (selected) {
+        selected.material.emissive.set(0x000000);
+        selected = null;
+        status.textContent = 'Hover over objects';
+      }
+    });
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const t = clock.getElapsedTime();
+      pickable.forEach((m, i) => {
+        if (m !== selected) m.rotation.y = t * 0.4 + i * 0.5;
+      });
+
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(pickable);
+
+      if (hits.length > 0) {
+        const hit = hits[0].object;
+        if (hovered !== hit) {
+          if (hovered && hovered !== selected) hovered.material.emissive.set(0x000000);
+          hovered = hit;
+          if (hovered !== selected) hovered.material.emissive.setHex(0x331122);
+        }
+        tooltip.style.display = 'block';
+        const p = hits[0].point;
+        tooltip.innerHTML = `<b>${hovered.userData.name}</b><br>` +
+          `Point: (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)})`;
+        renderer.domElement.style.cursor = 'pointer';
+      } else {
+        if (hovered && hovered !== selected) hovered.material.emissive.set(0x000000);
+        hovered = null;
+        tooltip.style.display = 'none';
+        renderer.domElement.style.cursor = '';
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>

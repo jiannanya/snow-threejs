@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js - WebGPU Basics</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; font-family: monospace; }
+    #info {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 13px; max-width: 700px; text-align: center;
+      background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 4px;
+    }
+    #badge {
+      position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+      font-size: 15px; font-weight: bold; padding: 6px 20px; border-radius: 20px;
+      font-family: monospace;
+    }
+    .gpu { background: #0a3a0a; color: #44ff44; border: 1px solid #44ff44; }
+    .fallback { background: #3a1a00; color: #ffaa44; border: 1px solid #ffaa44; }
+    #panel {
+      position: fixed; top: 110px; right: 16px;
+      background: rgba(0,0,0,0.78); color: #fff; font-size: 12px;
+      padding: 12px 16px; border-radius: 6px; min-width: 230px; line-height: 2;
+    }
+    #panel input[type=range] { width: 140px; vertical-align: middle; }
+    #code {
+      position: fixed; bottom: 16px; left: 16px; right: 260px;
+      background: rgba(0,0,0,0.85); color: #7df; font-size: 11px;
+      padding: 12px 14px; border-radius: 6px; font-family: monospace;
+      white-space: pre; overflow-x: auto; max-height: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Three.js WebGPURenderer — 特性检测 + 自动降级到 WebGL</div>
+  <div id="badge">Detecting...</div>
+  <div id="panel">
+    <b>Scene</b><br>
+    Speed:    <input type="range" id="speed"  min="0.1" max="5"   step="0.1" value="1"><br>
+    Metalness:<input type="range" id="metal"  min="0"   max="1"   step="0.05" value="0.8"><br>
+    Roughness:<input type="range" id="rough"  min="0"   max="1"   step="0.05" value="0.2"><br>
+    Exposure: <input type="range" id="expose" min="0.5" max="3"   step="0.1"  value="1.5"><br>
+    <label><input type="checkbox" id="wire"> Wireframe</label>
+  </div>
+  <div id="code">// WebGPURenderer feature detection pattern:
+import WebGPURenderer from 'three/addons/renderers/common/Renderer.js';
+// OR: import { WebGPURenderer } from 'three/webgpu';
+
+const renderer = new WebGPURenderer({ antialias: true });
+await renderer.init(); // Must await in WebGPU!
+
+// Check if GPU is active:
+console.log(renderer.backend.isWebGPUBackend); // true = WebGPU, false = WebGL fallback
+
+// TSL Node Materials work with WebGPURenderer:
+import { MeshStandardNodeMaterial } from 'three/addons/nodes/materials/...';
+import { sin, time, uv, positionLocal } from 'three/addons/nodes/tsl/TSL.js';
+const mat = new MeshStandardNodeMaterial();
+mat.positionNode = positionLocal.add(sin(time).mul(0.2));</div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const badge = document.getElementById('badge');
+
+    // ── WebGPU Detection + Renderer Selection ─────────────────────────────
+    async function createRenderer() {
+      // Try WebGPU
+      if (navigator.gpu) {
+        try {
+          const adapter = await navigator.gpu.requestAdapter();
+          if (adapter) {
+            // Dynamically import WebGPURenderer
+            try {
+              const { default: WebGPURenderer } = await import(
+                'https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/renderers/webgpu/WebGPURenderer.js'
+              );
+              const gpuRenderer = new WebGPURenderer({ antialias: true });
+              await gpuRenderer.init();
+              badge.textContent = '🟢 WebGPU Active';
+              badge.className = 'gpu';
+              return { renderer: gpuRenderer, isWebGPU: true };
+            } catch (e) {
+              console.warn('WebGPURenderer import failed:', e);
+            }
+          }
+        } catch (e) {
+          console.warn('WebGPU adapter request failed:', e);
+        }
+      }
+      // Fallback to WebGL
+      badge.textContent = '🟡 WebGL Fallback (WebGPU not available)';
+      badge.className = 'fallback';
+      const glRenderer = new THREE.WebGLRenderer({ antialias: true });
+      return { renderer: glRenderer, isWebGPU: false };
+    }
+
+    const { renderer, isWebGPU } = await createRenderer();
+
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.5;
+    if (renderer.shadowMap) {
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
+    document.body.appendChild(renderer.domElement);
+
+    // ── Scene ──────────────────────────────────────────────────────────────
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x06060f);
+
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+    camera.position.set(0, 4, 12);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    scene.add(new THREE.AmbientLight(0x334466, 1.5));
+    const dir = new THREE.DirectionalLight(0xffffff, 3);
+    dir.position.set(8, 12, 6);
+    if (dir.castShadow !== undefined) dir.castShadow = true;
+    scene.add(dir);
+    scene.add(new THREE.DirectionalLight(0x4466ff, 1).position.set(-8, 4, -6));
+
+    // Floor
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30),
+      new THREE.MeshStandardMaterial({ color: 0x111122, roughness: 0.9 }));
+    floor.rotation.x = -Math.PI / 2;
+    if (floor.receiveShadow !== undefined) floor.receiveShadow = true;
+    scene.add(floor);
+    scene.add(new THREE.GridHelper(30, 30, 0x223344, 0x111122));
+
+    // Objects
+    const meshes = [];
+    const geoShapes = [
+      new THREE.TorusKnotGeometry(0.8, 0.3, 128, 16),
+      new THREE.IcosahedronGeometry(1, 3),
+      new THREE.SphereGeometry(1, 64, 64),
+      new THREE.BoxGeometry(1.5, 1.5, 1.5),
+      new THREE.OctahedronGeometry(1.2),
+    ];
+    const colors = [0xff4444, 0x44ff88, 0x4488ff, 0xffcc44, 0xff44cc];
+
+    geoShapes.forEach((geo, i) => {
+      const mat = new THREE.MeshStandardMaterial({
+        color: colors[i], roughness: 0.2, metalness: 0.8,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      const angle = (i / geoShapes.length) * Math.PI * 2;
+      mesh.position.set(Math.cos(angle) * 4, 1.5, Math.sin(angle) * 4);
+      if (mesh.castShadow !== undefined) mesh.castShadow = true;
+      scene.add(mesh);
+      meshes.push(mesh);
+    });
+
+    // Center piece
+    const centerMesh = new THREE.Mesh(
+      new THREE.TorusGeometry(1.5, 0.4, 32, 128),
+      new THREE.MeshStandardMaterial({ color: 0xaaddff, roughness: 0.1, metalness: 0.95 })
+    );
+    centerMesh.position.y = 2;
+    if (centerMesh.castShadow !== undefined) centerMesh.castShadow = true;
+    scene.add(centerMesh);
+
+    // ── UI ─────────────────────────────────────────────────────────────────
+    let speedMult = 1;
+    document.getElementById('speed').oninput = e => speedMult = parseFloat(e.target.value);
+    document.getElementById('metal').oninput = e => meshes.forEach(m => m.material.metalness = parseFloat(e.target.value));
+    document.getElementById('rough').oninput = e => meshes.forEach(m => m.material.roughness = parseFloat(e.target.value));
+    document.getElementById('expose').oninput = e => renderer.toneMappingExposure = parseFloat(e.target.value);
+    document.getElementById('wire').onchange = e => {
+      meshes.forEach(m => m.material.wireframe = e.target.checked);
+      centerMesh.material.wireframe = e.target.checked;
+    };
+
+    const clock = new THREE.Clock();
+
+    function renderLoop() {
+      const t = clock.getElapsedTime() * speedMult;
+      meshes.forEach((m, i) => {
+        m.rotation.y = t * 0.5 + i;
+        m.rotation.x = t * 0.3;
+        m.position.y = 1.5 + Math.sin(t + i) * 0.5;
+      });
+      centerMesh.rotation.z = t * 0.3;
+      centerMesh.rotation.x = Math.sin(t * 0.4) * 0.5;
+      controls.update();
+    }
+
+    // WebGPURenderer uses setAnimationLoop differently (returns Promise in some versions)
+    if (isWebGPU && renderer.setAnimationLoop) {
+      renderer.setAnimationLoop(() => {
+        renderLoop();
+        renderer.render(scene, camera);
+      });
+    } else if (renderer.setAnimationLoop) {
+      renderer.setAnimationLoop(() => {
+        renderLoop();
+        renderer.render(scene, camera);
+      });
+    } else {
+      // Fallback RAF
+      function animate() {
+        requestAnimationFrame(animate);
+        renderLoop();
+        renderer.render(scene, camera);
+      }
+      animate();
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>

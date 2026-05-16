@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js - Materials Showcase</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #111; overflow: hidden; font-family: monospace; }
+    #info {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 13px;
+      background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 4px; text-align: center;
+    }
+    .label-item {
+      position: fixed; color: #fff; font-size: 11px;
+      background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 3px;
+      pointer-events: none; transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Three.js Materials — 材质类型对比 | 拖拽旋转</div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x111122);
+
+    const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
+    camera.position.set(0, 3, 18);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0x444466, 1.2));
+    const d1 = new THREE.DirectionalLight(0xffffff, 3);
+    d1.position.set(5, 10, 5);
+    scene.add(d1);
+    const d2 = new THREE.DirectionalLight(0x8899ff, 1.5);
+    d2.position.set(-5, -5, -5);
+    scene.add(d2);
+    const pointL = new THREE.PointLight(0xff6644, 3, 20);
+    pointL.position.set(0, 5, 5);
+    scene.add(pointL);
+
+    const baseGeo = new THREE.SphereGeometry(1, 64, 32);
+
+    const materials = [
+      { name: 'MeshBasicMaterial',    mat: new THREE.MeshBasicMaterial({ color: 0x44aaff, wireframe: false }) },
+      { name: 'MeshNormalMaterial',   mat: new THREE.MeshNormalMaterial() },
+      { name: 'MeshLambertMaterial',  mat: new THREE.MeshLambertMaterial({ color: 0x88ff44 }) },
+      { name: 'MeshPhongMaterial',    mat: new THREE.MeshPhongMaterial({ color: 0xff8844, shininess: 100 }) },
+      { name: 'MeshStandardMaterial\n(roughness=0.2, metalness=0.8)',
+        mat: new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.2, metalness: 0.8 }) },
+      { name: 'MeshStandardMaterial\n(roughness=0.9, metalness=0)',
+        mat: new THREE.MeshStandardMaterial({ color: 0xff4488, roughness: 0.9, metalness: 0 }) },
+      { name: 'MeshPhysicalMaterial\n(clearcoat=1)',
+        mat: new THREE.MeshPhysicalMaterial({ color: 0xff0000, roughness: 0.1, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.1 }) },
+      { name: 'MeshPhysicalMaterial\n(transmission=1, glass)',
+        mat: new THREE.MeshPhysicalMaterial({ roughness: 0, metalness: 0, transmission: 1, thickness: 1, ior: 1.5, transparent: true }) },
+      { name: 'MeshToonMaterial',    mat: new THREE.MeshToonMaterial({ color: 0x44ffaa }) },
+      { name: 'MeshDepthMaterial',   mat: new THREE.MeshDepthMaterial() },
+      { name: 'Wireframe\n(MeshBasicMaterial)', mat: new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true }) },
+    ];
+
+    const cols = 6;
+    const spacing = 3.2;
+    const labels = [];
+
+    materials.forEach(({ name, mat }, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const mesh = new THREE.Mesh(baseGeo, mat);
+      mesh.position.set(
+        (col - (cols - 1) / 2) * spacing,
+        -row * spacing + 1.5,
+        0
+      );
+      scene.add(mesh);
+
+      // HTML label
+      const el = document.createElement('div');
+      el.className = 'label-item';
+      el.textContent = name;
+      document.body.appendChild(el);
+      labels.push({ el, mesh });
+    });
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const t = clock.getElapsedTime();
+      pointL.position.x = Math.sin(t) * 6;
+      pointL.position.z = Math.cos(t) * 6;
+
+      // Update label positions
+      labels.forEach(({ el, mesh }) => {
+        const pos = mesh.position.clone().project(camera);
+        el.style.left = ((pos.x + 1) / 2 * innerWidth) + 'px';
+        el.style.top = ((-pos.y + 1) / 2 * innerHeight + 55) + 'px';
+      });
+
+      controls.update();
+      renderer.render(scene, camera);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>

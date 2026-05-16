@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js - Morph Targets</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; font-family: monospace; }
+    #info {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 13px;
+      background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 4px;
+    }
+    #panel {
+      position: fixed; top: 60px; right: 16px;
+      background: rgba(0,0,0,0.75); color: #fff; font-size: 12px;
+      padding: 12px 16px; border-radius: 6px; min-width: 220px; line-height: 2;
+    }
+    #panel input[type=range] { width: 130px; vertical-align: middle; }
+  </style>
+</head>
+<body>
+  <div id="info">Three.js Morph Targets — 顶点变形动画</div>
+  <div id="panel">
+    <b>Morph Influences</b><br>
+    Inflate: <input type="range" id="m0" min="0" max="1" step="0.01" value="0"><br>
+    Spike:   <input type="range" id="m1" min="0" max="1" step="0.01" value="0"><br>
+    Twist:   <input type="range" id="m2" min="0" max="1" step="0.01" value="0"><br>
+    Squash:  <input type="range" id="m3" min="0" max="1" step="0.01" value="0"><br>
+    <label><input type="checkbox" id="autoAnim" checked> Auto Animate</label>
+  </div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a1a);
+
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+    camera.position.set(0, 2, 7);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    scene.add(new THREE.AmbientLight(0x445566, 1));
+    const dir = new THREE.DirectionalLight(0xffffff, 3);
+    dir.position.set(5, 8, 5); scene.add(dir);
+    scene.add(new THREE.DirectionalLight(0x4466ff, 1).position.set(-5, -3, -5));
+
+    // ── Build Sphere with morph targets ───────────────────────────────────
+    const SEG = 64;
+    const geo = new THREE.SphereGeometry(1.5, SEG, SEG);
+
+    const basePos = geo.attributes.position.array.slice();
+    const count = basePos.length / 3;
+
+    // Morph 0: Inflate (push outward along normal)
+    const inflate = new Float32Array(basePos.length);
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      const x = basePos[i3], y = basePos[i3+1], z = basePos[i3+2];
+      const len = Math.sqrt(x*x + y*y + z*z);
+      inflate[i3]   = x / len * 0.8;
+      inflate[i3+1] = y / len * 0.8;
+      inflate[i3+2] = z / len * 0.8;
+    }
+
+    // Morph 1: Spike (create pointy bumps)
+    const spike = new Float32Array(basePos.length);
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      const x = basePos[i3], y = basePos[i3+1], z = basePos[i3+2];
+      const len = Math.sqrt(x*x + y*y + z*z);
+      const nx = x / len, ny = y / len, nz = z / len;
+      const bump = Math.abs(Math.sin(nx * 8) * Math.cos(ny * 8) * Math.sin(nz * 8)) * 0.8;
+      spike[i3]   = nx * bump;
+      spike[i3+1] = ny * bump;
+      spike[i3+2] = nz * bump;
+    }
+
+    // Morph 2: Twist (rotate along Y based on height)
+    const twist = new Float32Array(basePos.length);
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      const x = basePos[i3], y = basePos[i3+1], z = basePos[i3+2];
+      const angle = y * 1.5;
+      const cos = Math.cos(angle), sin = Math.sin(angle);
+      const rx = cos * x - sin * z;
+      const rz = sin * x + cos * z;
+      twist[i3]   = rx - x;
+      twist[i3+1] = 0;
+      twist[i3+2] = rz - z;
+    }
+
+    // Morph 3: Squash (flatten Y, expand XZ)
+    const squash = new Float32Array(basePos.length);
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      const x = basePos[i3], y = basePos[i3+1], z = basePos[i3+2];
+      squash[i3]   = x * 0.5;
+      squash[i3+1] = -y * 0.7;
+      squash[i3+2] = z * 0.5;
+    }
+
+    geo.morphAttributes.position = [
+      new THREE.BufferAttribute(inflate, 3),
+      new THREE.BufferAttribute(spike, 3),
+      new THREE.BufferAttribute(twist, 3),
+      new THREE.BufferAttribute(squash, 3),
+    ];
+    geo.morphTargetsRelative = true;
+    geo.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+      color: 0x44aaff, roughness: 0.35, metalness: 0.4,
+      side: THREE.DoubleSide,
+    }));
+    mesh.morphTargetInfluences = [0, 0, 0, 0];
+    scene.add(mesh);
+
+    // Wireframe overlay
+    const wireMesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.08 }));
+    mesh.add(wireMesh);
+
+    // ── UI ────────────────────────────────────────────────────────────────
+    let autoAnim = true;
+    document.getElementById('autoAnim').onchange = e => autoAnim = e.target.checked;
+    const sliders = [
+      document.getElementById('m0'),
+      document.getElementById('m1'),
+      document.getElementById('m2'),
+      document.getElementById('m3'),
+    ];
+    sliders.forEach((s, i) => {
+      s.oninput = () => {
+        mesh.morphTargetInfluences[i] = parseFloat(s.value);
+      };
+    });
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const t = clock.getElapsedTime();
+      mesh.rotation.y = t * 0.2;
+      if (autoAnim) {
+        // Wave between morphs
+        mesh.morphTargetInfluences[0] = Math.max(0, Math.sin(t * 0.7));
+        mesh.morphTargetInfluences[1] = Math.max(0, Math.sin(t * 0.5 + 2));
+        mesh.morphTargetInfluences[2] = Math.max(0, Math.sin(t * 0.4 + 4));
+        mesh.morphTargetInfluences[3] = Math.max(0, Math.sin(t * 0.6 + 1));
+        sliders.forEach((s, i) => s.value = mesh.morphTargetInfluences[i]);
+      }
+      controls.update();
+      renderer.render(scene, camera);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js - GLTF Loader</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; font-family: monospace; }
+    #info {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 13px;
+      background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 4px; text-align: center;
+    }
+    #progress {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      color: #adf; font-size: 18px; font-family: monospace; text-align: center;
+      background: rgba(0,0,0,0.8); padding: 24px 40px; border-radius: 8px;
+    }
+    #panel {
+      position: fixed; top: 60px; right: 16px;
+      background: rgba(0,0,0,0.75); color: #fff; font-size: 12px;
+      padding: 12px 16px; border-radius: 6px; min-width: 220px; line-height: 2;
+    }
+    #panel input[type=range] { width: 130px; vertical-align: middle; }
+    #tree {
+      position: fixed; bottom: 16px; left: 16px;
+      background: rgba(0,0,0,0.75); color: #8df; font-size: 11px;
+      padding: 10px 14px; border-radius: 6px; max-height: 220px; overflow-y: auto;
+      max-width: 300px; font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Three.js GLTFLoader — 加载 glTF 模型 (程序构建演示)</div>
+  <div id="progress">Loading model...</div>
+  <div id="panel" style="display:none">
+    <b>Animation</b><br>
+    <button id="btnPlay" style="background:#335;color:#adf;border:1px solid #446;padding:2px 8px;border-radius:3px;cursor:pointer">▶ Play</button>
+    <button id="btnPause" style="background:#335;color:#adf;border:1px solid #446;padding:2px 8px;border-radius:3px;cursor:pointer">⏸</button><br>
+    Speed: <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1"><br>
+    <b>Scene</b><br>
+    Wireframe: <input type="checkbox" id="wire">
+  </div>
+  <div id="tree"></div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader }    from 'three/addons/loaders/GLTFLoader.js';
+    import { DRACOLoader }   from 'three/addons/loaders/DRACOLoader.js';
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    document.body.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0e1a2e);
+    scene.fog = new THREE.Fog(0x0e1a2e, 10, 40);
+
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+    camera.position.set(0, 3, 8);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0, 1.5, 0);
+
+    scene.add(new THREE.AmbientLight(0x334466, 2));
+    const dir = new THREE.DirectionalLight(0xffffff, 2.5);
+    dir.position.set(5, 10, 5); dir.castShadow = true;
+    scene.add(dir);
+    scene.add(new THREE.DirectionalLight(0x4466ff, 0.8).position.set(-5, 5, -5));
+
+    // Ground
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30),
+      new THREE.MeshStandardMaterial({ color: 0x112233, roughness: 0.9 }));
+    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
+    scene.add(floor);
+    scene.add(new THREE.GridHelper(30, 30, 0x223344, 0x1a2233));
+
+    // ── Build a procedural "robot" glTF scene ─────────────────────────────
+    // Since we can't load from filesystem, we build a scene procedurally
+    // and demonstrate GLTFLoader API with a real public glTF URL.
+    const progressEl = document.getElementById('progress');
+    const panelEl    = document.getElementById('panel');
+    const treeEl     = document.getElementById('tree');
+
+    let mixer = null;
+    let modelRoot = null;
+    const allMeshes = [];
+
+    // Fallback: build robot procedurally and simulate gltf.scene traversal
+    function buildProceduralRobot() {
+      const root = new THREE.Group();
+      root.name = 'Robot';
+
+      const mat = (color) => new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.6 });
+
+      // Body
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1, 1.2, 0.7), mat(0x4488cc));
+      body.name = 'Body'; body.position.y = 1.4; body.castShadow = true;
+      root.add(body); allMeshes.push(body);
+
+      // Head
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.6), mat(0x5599dd));
+      head.name = 'Head'; head.position.y = 0.95; head.castShadow = true;
+      body.add(head); allMeshes.push(head);
+
+      // Eyes
+      const eyeGeo = new THREE.SphereGeometry(0.1, 8, 8);
+      const eyeMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00cccc });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.name = 'EyeL'; eyeL.position.set(-0.18, 0.05, 0.32); head.add(eyeL);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.name = 'EyeR'; eyeR.position.set( 0.18, 0.05, 0.32); head.add(eyeR);
+
+      // Arms
+      const armGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.8, 8);
+      const armL = new THREE.Mesh(armGeo, mat(0x3377bb)); armL.name = 'ArmL';
+      armL.position.set(-0.65, 0.1, 0); armL.rotation.z = -0.3; armL.castShadow = true; body.add(armL); allMeshes.push(armL);
+      const armR = new THREE.Mesh(armGeo, mat(0x3377bb)); armR.name = 'ArmR';
+      armR.position.set( 0.65, 0.1, 0); armR.rotation.z =  0.3; armR.castShadow = true; body.add(armR); allMeshes.push(armR);
+
+      // Legs
+      const legGeo = new THREE.CylinderGeometry(0.15, 0.13, 0.9, 8);
+      const legL = new THREE.Mesh(legGeo, mat(0x3366aa)); legL.name = 'LegL';
+      legL.position.set(-0.25, -1.05, 0); legL.castShadow = true; root.add(legL); allMeshes.push(legL);
+      const legR = new THREE.Mesh(legGeo, mat(0x3366aa)); legR.name = 'LegR';
+      legR.position.set( 0.25, -1.05, 0); legR.castShadow = true; root.add(legR); allMeshes.push(legR);
+
+      root.position.y = 1;
+      scene.add(root);
+      modelRoot = root;
+
+      // Animate with AnimationMixer (wave arms + bob)
+      mixer = new THREE.AnimationMixer(root);
+
+      // Arm wave
+      const armLRotTrack = new THREE.QuaternionKeyframeTrack(
+        'ArmL.quaternion',
+        [0, 0.5, 1],
+        [
+          ...new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, -0.3)).toArray(),
+          ...new THREE.Quaternion().setFromEuler(new THREE.Euler(1.2, 0, -0.5)).toArray(),
+          ...new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, -0.3)).toArray(),
+        ]
+      );
+      const clip = new THREE.AnimationClip('wave', 1, [armLRotTrack]);
+      const action = mixer.clipAction(clip);
+      action.setLoop(THREE.LoopRepeat, Infinity);
+      action.play();
+
+      return root;
+    }
+
+    // Try to load a real glTF from a reliable public CDN
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/libs/draco/');
+
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+
+    // Use a LoadingManager to show progress
+    const manager = new THREE.LoadingManager(
+      () => { /* onLoad */ },
+      (url, loaded, total) => {
+        progressEl.textContent = `Loading... ${Math.round(loaded / total * 100)}%\n${url.split('/').pop()}`;
+      },
+      (url) => {
+        console.warn('Error loading:', url);
+      }
+    );
+
+    function buildSceneTree(obj, depth = 0) {
+      const indent = '  '.repeat(depth);
+      const type = obj.isMesh ? '▣' : obj.isLight ? '☀' : obj.isGroup ? '⊕' : '○';
+      let line = `${indent}${type} ${obj.name || '(unnamed)'}\n`;
+      if (obj.isMesh) line += `${indent}  └ ${obj.geometry.type} / ${obj.material.type}\n`;
+      obj.children.forEach(c => line += buildSceneTree(c, depth + 1));
+      return line;
+    }
+
+    // Attempt to load public glTF demo model
+    const glTF_URL = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BoxAnimated/glTF/BoxAnimated.gltf';
+
+    progressEl.textContent = 'Loading BoxAnimated.gltf from KhronosGroup...';
+
+    loader.setPath('');
+    loader.load(
+      glTF_URL,
+      (gltf) => {
+        progressEl.style.display = 'none';
+        panelEl.style.display = 'block';
+
+        const model = gltf.scene;
+        model.scale.setScalar(1.5);
+        model.position.y = 1;
+        model.traverse(child => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            allMeshes.push(child);
+          }
+        });
+        scene.add(model);
+        modelRoot = model;
+
+        treeEl.innerHTML = '<b>gltf.scene tree:</b>\n' + buildSceneTree(model);
+
+        if (gltf.animations.length > 0) {
+          mixer = new THREE.AnimationMixer(model);
+          gltf.animations.forEach(clip => {
+            mixer.clipAction(clip).setLoop(THREE.LoopRepeat, Infinity).play();
+          });
+        }
+      },
+      (xhr) => {
+        progressEl.textContent = `Loading... ${Math.round(xhr.loaded / (xhr.total || 1) * 100)}%`;
+      },
+      (err) => {
+        console.warn('Remote glTF failed, building procedural robot:', err);
+        progressEl.textContent = 'Remote model unavailable.\nBuilding procedural demo...';
+        setTimeout(() => {
+          buildProceduralRobot();
+          progressEl.style.display = 'none';
+          panelEl.style.display = 'block';
+          treeEl.innerHTML = '<b>Procedural scene tree:</b>\n' + buildSceneTree(modelRoot);
+        }, 800);
+      }
+    );
+
+    // ── UI ────────────────────────────────────────────────────────────────
+    document.getElementById('btnPlay').onclick  = () => mixer?.timeScale && (mixer.timeScale = 1);
+    document.getElementById('btnPause').onclick = () => mixer && (mixer.timeScale = mixer.timeScale === 0 ? 1 : 0);
+    document.getElementById('speed').oninput    = (e) => mixer && (mixer.timeScale = parseFloat(e.target.value));
+    document.getElementById('wire').onchange    = (e) => allMeshes.forEach(m => m.material.wireframe = e.target.checked);
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const delta = clock.getDelta();
+      mixer?.update(delta);
+      controls.update();
+      renderer.render(scene, camera);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>

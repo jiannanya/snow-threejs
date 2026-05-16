@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js - Lights Showcase</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; font-family: monospace; }
+    #info {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 13px;
+      background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 4px; text-align: center;
+    }
+    #panel {
+      position: fixed; top: 60px; right: 16px;
+      background: rgba(0,0,0,0.7); color: #fff; font-size: 12px;
+      padding: 12px; border-radius: 6px; line-height: 2;
+    }
+    #panel label { cursor: pointer; user-select: none; }
+    #panel input[type=range] { width: 100px; vertical-align: middle; }
+  </style>
+</head>
+<body>
+  <div id="info">Three.js Lights — 灯光类型展示 | 拖拽旋转视图</div>
+  <div id="panel">
+    <label><input type="checkbox" id="chkAmbient" checked> AmbientLight</label><br>
+    <label><input type="checkbox" id="chkDir" checked> DirectionalLight</label><br>
+    <label><input type="checkbox" id="chkPoint" checked> PointLight</label><br>
+    <label><input type="checkbox" id="chkSpot" checked> SpotLight</label><br>
+    <label><input type="checkbox" id="chkHemi" checked> HemisphereLight</label><br>
+    <br>
+    Exposure: <input type="range" id="exposure" min="0" max="3" step="0.1" value="1">
+  </div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050510);
+
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+    camera.position.set(0, 8, 16);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0, 1, 0);
+
+    // ── Lights ──────────────────────────────────────────────────────────────
+    const ambientLight = new THREE.AmbientLight(0x223355, 0.8);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffaa, 2);
+    dirLight.position.set(8, 12, 6);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.set(1024, 1024);
+    scene.add(dirLight);
+    scene.add(new THREE.DirectionalLightHelper(dirLight, 1));
+
+    const pointLight = new THREE.PointLight(0xff4422, 5, 20, 2);
+    pointLight.position.set(-5, 4, 0);
+    pointLight.castShadow = true;
+    scene.add(pointLight);
+    const pointHelper = new THREE.PointLightHelper(pointLight, 0.3);
+    scene.add(pointHelper);
+
+    const spotLight = new THREE.SpotLight(0x44aaff, 5, 25, Math.PI / 8, 0.3, 2);
+    spotLight.position.set(5, 10, 0);
+    spotLight.castShadow = true;
+    spotLight.shadow.mapSize.set(1024, 1024);
+    scene.add(spotLight);
+    scene.add(spotLight.target);
+    scene.add(new THREE.SpotLightHelper(spotLight));
+
+    const hemiLight = new THREE.HemisphereLight(0x4488ff, 0x884422, 0.8);
+    scene.add(hemiLight);
+    scene.add(new THREE.HemisphereLightHelper(hemiLight, 1));
+
+    // ── Scene Objects ────────────────────────────────────────────────────────
+    const mat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.4, metalness: 0.1 });
+
+    // Floor
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshStandardMaterial({ color: 0x223344, roughness: 1 }));
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Spheres
+    for (let i = 0; i < 9; i++) {
+      const angle = (i / 9) * Math.PI * 2;
+      const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.7, 32, 32), mat.clone());
+      sphere.position.set(Math.cos(angle) * 5, 0.7, Math.sin(angle) * 5);
+      sphere.castShadow = true;
+      sphere.receiveShadow = true;
+      sphere.material.color.setHSL(i / 9, 0.5, 0.7);
+      scene.add(sphere);
+    }
+
+    // Center torus knot
+    const knot = new THREE.Mesh(
+      new THREE.TorusKnotGeometry(1.2, 0.4, 100, 16),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.5 })
+    );
+    knot.position.y = 2;
+    knot.castShadow = true;
+    scene.add(knot);
+
+    // ── UI Controls ──────────────────────────────────────────────────────────
+    document.getElementById('chkAmbient').onchange = e => ambientLight.visible = e.target.checked;
+    document.getElementById('chkDir').onchange = e => dirLight.visible = e.target.checked;
+    document.getElementById('chkPoint').onchange = e => { pointLight.visible = e.target.checked; pointHelper.visible = e.target.checked; };
+    document.getElementById('chkSpot').onchange = e => spotLight.visible = e.target.checked;
+    document.getElementById('chkHemi').onchange = e => hemiLight.visible = e.target.checked;
+    document.getElementById('exposure').oninput = e => renderer.toneMappingExposure = parseFloat(e.target.value);
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const t = clock.getElapsedTime();
+      knot.rotation.y = t * 0.4;
+      knot.rotation.x = t * 0.2;
+
+      // Orbit point light
+      pointLight.position.x = Math.sin(t * 0.7) * 5;
+      pointLight.position.z = Math.cos(t * 0.7) * 5;
+      pointHelper.update();
+
+      // Orbit spot light target
+      spotLight.target.position.x = Math.sin(t * 0.3) * 4;
+      spotLight.target.position.z = Math.cos(t * 0.3) * 4;
+      spotLight.target.updateMatrixWorld();
+
+      controls.update();
+      renderer.render(scene, camera);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>

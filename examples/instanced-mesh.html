@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js - InstancedMesh</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; font-family: monospace; }
+    #info {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      color: #fff; font-size: 13px;
+      background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 4px;
+    }
+    #stats-box {
+      position: fixed; top: 60px; left: 16px;
+      background: rgba(0,0,0,0.75); color: #8f8; font-size: 13px;
+      padding: 12px 16px; border-radius: 6px; line-height: 1.8;
+    }
+    #panel {
+      position: fixed; top: 60px; right: 16px;
+      background: rgba(0,0,0,0.75); color: #fff; font-size: 12px;
+      padding: 12px 16px; border-radius: 6px; min-width: 200px; line-height: 2;
+    }
+    #panel input[type=range] { width: 130px; vertical-align: middle; }
+  </style>
+</head>
+<body>
+  <div id="info">Three.js InstancedMesh — 高性能大量实例渲染 | 拖拽旋转</div>
+  <div id="stats-box">
+    Draw calls: <span id="drawCalls">1</span><br>
+    Instances: <span id="instCount">10000</span><br>
+    FPS: <span id="fps">--</span>
+  </div>
+  <div id="panel">
+    Count: <input type="range" id="count" min="1000" max="100000" step="1000" value="10000"><br>
+    <span id="countLabel">10000</span> instances<br>
+    Shape:
+    <select id="shape">
+      <option value="box">Box</option>
+      <option value="sphere" selected>Sphere</option>
+      <option value="cone">Cone</option>
+      <option value="torus">Torus</option>
+    </select><br>
+    Spread: <input type="range" id="spread" min="5" max="100" step="5" value="30"><br>
+    Animate: <label><input type="checkbox" id="animate" checked> Rotate</label>
+  </div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x030308);
+    scene.fog = new THREE.FogExp2(0x030308, 0.008);
+
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 500);
+    camera.position.set(0, 20, 50);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(devicePixelRatio);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    scene.add(new THREE.AmbientLight(0x334466, 1.5));
+    const dir1 = new THREE.DirectionalLight(0xffffff, 3);
+    dir1.position.set(20, 40, 20);
+    scene.add(dir1);
+    const dir2 = new THREE.DirectionalLight(0x4488ff, 1.5);
+    dir2.position.set(-20, 10, -20);
+    scene.add(dir2);
+
+    // ── InstancedMesh ─────────────────────────────────────────────────────
+    const geoMap = {
+      box:    new THREE.BoxGeometry(0.4, 0.4, 0.4),
+      sphere: new THREE.SphereGeometry(0.25, 8, 8),
+      cone:   new THREE.ConeGeometry(0.2, 0.5, 8),
+      torus:  new THREE.TorusGeometry(0.2, 0.08, 8, 16),
+    };
+
+    let iMesh = null;
+    const mat = new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.5 });
+    const dummy = new THREE.Object3D();
+    const color = new THREE.Color();
+
+    let COUNT = 10000;
+    let SPREAD = 30;
+    let shapeKey = 'sphere';
+
+    // Store per-instance data for animation
+    let instanceData = [];
+
+    function buildInstanced() {
+      if (iMesh) { scene.remove(iMesh); iMesh.dispose(); }
+      instanceData = [];
+
+      iMesh = new THREE.InstancedMesh(geoMap[shapeKey], mat, COUNT);
+      iMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+
+      for (let i = 0; i < COUNT; i++) {
+        const phi = Math.acos(2 * Math.random() - 1);
+        const theta = Math.random() * Math.PI * 2;
+        const r = SPREAD * (0.3 + Math.random() * 0.7);
+        const x = r * Math.sin(phi) * Math.cos(theta);
+        const y = r * Math.sin(phi) * Math.sin(theta);
+        const z = r * Math.cos(phi);
+        const s = 0.5 + Math.random() * 1.5;
+        instanceData.push({
+          x, y, z, s,
+          rotSpeed: (Math.random() - 0.5) * 2,
+          phase: Math.random() * Math.PI * 2,
+        });
+
+        dummy.position.set(x, y, z);
+        dummy.scale.setScalar(s);
+        dummy.updateMatrix();
+        iMesh.setMatrixAt(i, dummy.matrix);
+
+        color.setHSL(i / COUNT, 0.7, 0.5 + Math.random() * 0.3);
+        iMesh.setColorAt(i, color);
+      }
+      iMesh.instanceMatrix.needsUpdate = true;
+      if (iMesh.instanceColor) iMesh.instanceColor.needsUpdate = true;
+      scene.add(iMesh);
+      document.getElementById('instCount').textContent = COUNT;
+    }
+
+    buildInstanced();
+
+    // ── Controls ──────────────────────────────────────────────────────────
+    document.getElementById('count').oninput = (e) => {
+      COUNT = parseInt(e.target.value);
+      document.getElementById('countLabel').textContent = COUNT;
+      buildInstanced();
+    };
+    document.getElementById('shape').onchange = (e) => {
+      shapeKey = e.target.value; buildInstanced();
+    };
+    document.getElementById('spread').oninput = (e) => {
+      SPREAD = parseInt(e.target.value); buildInstanced();
+    };
+    let doAnimate = true;
+    document.getElementById('animate').onchange = e => doAnimate = e.target.checked;
+
+    // FPS counter
+    let frames = 0, lastFpsTime = performance.now();
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const t = clock.getElapsedTime();
+      frames++;
+      const now = performance.now();
+      if (now - lastFpsTime > 500) {
+        document.getElementById('fps').textContent = Math.round(frames * 1000 / (now - lastFpsTime));
+        document.getElementById('drawCalls').textContent = renderer.info.render.calls;
+        frames = 0; lastFpsTime = now;
+      }
+
+      if (doAnimate && iMesh) {
+        for (let i = 0; i < COUNT; i++) {
+          const d = instanceData[i];
+          dummy.position.set(d.x, d.y, d.z);
+          dummy.scale.setScalar(d.s);
+          dummy.rotation.y = t * d.rotSpeed + d.phase;
+          dummy.rotation.x = t * d.rotSpeed * 0.5;
+          dummy.updateMatrix();
+          iMesh.setMatrixAt(i, dummy.matrix);
+        }
+        iMesh.instanceMatrix.needsUpdate = true;
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>
