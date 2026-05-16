@@ -1,120 +1,122 @@
-# Three.js 3D 图形技能库
+# Three.js 3D Graphics Skill Library
 
-> **版本**: Three.js r167 (npm `0.167.1`) · **渲染器**: WebGL / WebGPU · **模块**: ES Modules via CDN importmap
+> **Language**: English | [中文](./README_cn.md)
 
-本技能库提供 20 个可直接运行的 HTML 示例、7 份参考文档，覆盖从基础场景搭建到高级着色器的完整 Three.js 开发知识体系。
+> **Version**: Three.js r167 (npm `0.167.1`) · **Renderer**: WebGL / WebGPU · **Modules**: ES Modules via CDN importmap
+
+This skill library provides 20 ready-to-run HTML examples and 7 reference documents, covering the complete Three.js development knowledge base from basic scene setup to advanced shaders.
 
 ---
 
-## 示例截图预览
+## Example Screenshot Gallery
 
-### 初级示例
+### Beginner Examples
 
 <table>
 <tr>
 <td align="center" width="25%">
 <a href="./examples/hello-cube.html"><img src="./images/hello-cube.png" width="100%"></a><br>
-<b>Hello Cube</b><br><sub>基础旋转立方体 · 场景搭建</sub>
+<b>Hello Cube</b><br><sub>Basic rotating cube · Scene setup</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/geometries.html"><img src="./images/geometries.png" width="100%"></a><br>
-<b>Geometries</b><br><sub>所有内置几何体展示</sub>
+<b>Geometries</b><br><sub>All built-in geometry types</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/materials.html"><img src="./images/materials.png" width="100%"></a><br>
-<b>Materials</b><br><sub>11 种材质类型对比</sub>
+<b>Materials</b><br><sub>11 material types compared</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/lights.html"><img src="./images/lights.png" width="100%"></a><br>
-<b>Lights</b><br><sub>5 种光源类型演示</sub>
+<b>Lights</b><br><sub>5 light source types demo</sub>
 </td>
 </tr>
 <tr>
 <td align="center" width="25%">
 <a href="./examples/shadows.html"><img src="./images/shadows.png" width="100%"></a><br>
-<b>Shadows</b><br><sub>阴影映射与软硬阴影</sub>
+<b>Shadows</b><br><sub>Shadow mapping &amp; soft/hard shadows</sub>
 </td>
 <td></td><td></td><td></td>
 </tr>
 </table>
 
-### 中级示例
+### Intermediate Examples
 
 <table>
 <tr>
 <td align="center" width="25%">
 <a href="./examples/textures.html"><img src="./images/textures.png" width="100%"></a><br>
-<b>Textures</b><br><sub>程序化 Canvas 纹理</sub>
+<b>Textures</b><br><sub>Procedural Canvas textures</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/orbit-controls.html"><img src="./images/orbit-controls.png" width="100%"></a><br>
-<b>Orbit Controls</b><br><sub>相机交互控制器</sub>
+<b>Orbit Controls</b><br><sub>Interactive camera controller</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/particles.html"><img src="./images/particles.png" width="100%"></a><br>
-<b>Particles</b><br><sub>5 万粒子系统</sub>
+<b>Particles</b><br><sub>50k particle system</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/raycasting.html"><img src="./images/raycasting.png" width="100%"></a><br>
-<b>Raycasting</b><br><sub>鼠标拾取与高亮</sub>
+<b>Raycasting</b><br><sub>Mouse picking &amp; highlight</sub>
 </td>
 </tr>
 <tr>
 <td align="center" width="25%">
 <a href="./examples/animation-mixer.html"><img src="./images/animation-mixer.png" width="100%"></a><br>
-<b>Animation Mixer</b><br><sub>关键帧动画系统</sub>
+<b>Animation Mixer</b><br><sub>Keyframe animation system</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/morph-targets.html"><img src="./images/morph-targets.png" width="100%"></a><br>
-<b>Morph Targets</b><br><sub>顶点变形动画</sub>
+<b>Morph Targets</b><br><sub>Vertex morph animation</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/instanced-mesh.html"><img src="./images/instanced-mesh.png" width="100%"></a><br>
-<b>Instanced Mesh</b><br><sub>10 万实例单次绘制</sub>
+<b>Instanced Mesh</b><br><sub>100k instances, single draw call</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/fog-skybox.html"><img src="./images/fog-skybox.png" width="100%"></a><br>
-<b>Fog &amp; Skybox</b><br><sub>雾效与大气天空</sub>
+<b>Fog &amp; Skybox</b><br><sub>Fog effects &amp; atmospheric sky</sub>
 </td>
 </tr>
 <tr>
 <td align="center" width="25%">
 <a href="./examples/gltf-loader.html"><img src="./images/gltf-loader.png" width="100%"></a><br>
-<b>GLTF Loader</b><br><sub>加载 3D 模型文件</sub>
+<b>GLTF Loader</b><br><sub>Load 3D model files</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/sprite-billboard.html"><img src="./images/sprite-billboard.png" width="100%"></a><br>
-<b>Sprite Billboard</b><br><sub>精灵与公告板标注</sub>
+<b>Sprite Billboard</b><br><sub>Sprites &amp; billboard labels</sub>
 </td>
 <td></td><td></td>
 </tr>
 </table>
 
-### 高级示例
+### Advanced Examples
 
 <table>
 <tr>
 <td align="center" width="25%">
 <a href="./examples/custom-shader.html"><img src="./images/custom-shader.png" width="100%"></a><br>
-<b>Custom Shader</b><br><sub>GLSL 自定义着色器</sub>
+<b>Custom Shader</b><br><sub>Custom GLSL shaders</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/postprocessing.html"><img src="./images/postprocessing.png" width="100%"></a><br>
-<b>Post-processing</b><br><sub>EffectComposer 后期效果</sub>
+<b>Post-processing</b><br><sub>EffectComposer pipeline</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/environment-map.html"><img src="./images/environment-map.png" width="100%"></a><br>
-<b>Environment Map</b><br><sub>PMREM 环境光照与反射</sub>
+<b>Environment Map</b><br><sub>PMREM lighting &amp; reflections</sub>
 </td>
 <td align="center" width="25%">
 <a href="./examples/tsl-shader.html"><img src="./images/tsl-shader.png" width="100%"></a><br>
-<b>TSL Shader</b><br><sub>节点着色器系统</sub>
+<b>TSL Shader</b><br><sub>Node-based shader system</sub>
 </td>
 </tr>
 <tr>
 <td align="center" width="25%">
 <a href="./examples/webgpu-basics.html"><img src="./images/webgpu-basics.png" width="100%"></a><br>
-<b>WebGPU Basics</b><br><sub>WebGPU 渲染器 + 降级</sub>
+<b>WebGPU Basics</b><br><sub>WebGPU renderer + fallback</sub>
 </td>
 <td></td><td></td><td></td>
 </tr>
@@ -122,32 +124,32 @@
 
 ---
 
-## 目录
+## Table of Contents
 
-- [快速开始](#快速开始)
-- [CDN 导入模板](#cdn-导入模板)
-- [示例演示](#示例演示)
-  - [初级示例](#初级示例-beginner)
-  - [中级示例](#中级示例-intermediate)
-  - [高级示例](#高级示例-advanced)
-- [参考文档](#参考文档)
-- [API 速查](#api-速查)
-- [官方资源](#官方资源)
+- [Quick Start](#quick-start)
+- [CDN Import Template](#cdn-import-template)
+- [Examples](#examples)
+  - [Beginner Examples](#beginner-examples)
+  - [Intermediate Examples](#intermediate-examples)
+  - [Advanced Examples](#advanced-examples)
+- [Reference Docs](#reference-docs)
+- [API Cheatsheet](#api-cheatsheet)
+- [Official Resources](#official-resources)
 
 ---
 
-## 快速开始
+## Quick Start
 
-所有示例均为**独立 HTML 文件**，无需构建工具，直接用浏览器打开即可运行。
+All examples are **standalone HTML files** — no build tools needed. Open directly in a browser.
 
 ```bash
-# 用任意 HTTP 服务器托管（推荐，避免 CORS 问题）
+# Serve with any HTTP server (recommended, avoids CORS issues)
 npx serve .
 
-# 或者直接双击 HTML 文件打开（部分功能需要服务器环境）
+# Or double-click the HTML file (some features require a server)
 ```
 
-最小场景骨架：
+Minimal scene skeleton:
 
 ```html
 <!DOCTYPE html>
@@ -166,7 +168,7 @@ npx serve .
   import * as THREE from 'three';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-  // 1. 场景 + 相机 + 渲染器
+  // 1. Scene + Camera + Renderer
   const scene    = new THREE.Scene();
   const camera   = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -174,7 +176,7 @@ npx serve .
   document.body.appendChild(renderer.domElement);
   camera.position.z = 5;
 
-  // 2. 添加物体
+  // 2. Add objects
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(),
     new THREE.MeshStandardMaterial({ color: 0x44aaff })
@@ -182,7 +184,7 @@ npx serve .
   scene.add(mesh);
   scene.add(new THREE.DirectionalLight(0xffffff, 3).position.set(5, 5, 5));
 
-  // 3. 控制器 + 渲染循环
+  // 3. Controls + render loop
   const controls = new OrbitControls(camera, renderer.domElement);
   renderer.setAnimationLoop(() => {
     mesh.rotation.y += 0.01;
@@ -190,7 +192,7 @@ npx serve .
     renderer.render(scene, camera);
   });
 
-  // 4. 响应式尺寸
+  // 4. Responsive resize
   window.addEventListener('resize', () => {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
@@ -203,7 +205,7 @@ npx serve .
 
 ---
 
-## CDN 导入模板
+## CDN Import Template
 
 ```html
 <script type="importmap">
@@ -216,10 +218,10 @@ npx serve .
 </script>
 ```
 
-常用 addons 路径：
+Common addon paths:
 
-| 功能 | 导入路径 |
-|------|---------|
+| Feature | Import Path |
+|---------|------------|
 | OrbitControls | `three/addons/controls/OrbitControls.js` |
 | GLTFLoader | `three/addons/loaders/GLTFLoader.js` |
 | DRACOLoader | `three/addons/loaders/DRACOLoader.js` |
@@ -230,27 +232,27 @@ npx serve .
 
 ---
 
-## 示例演示
+## Examples
 
-### 初级示例 (Beginner)
+### Beginner Examples
 
 ---
 
-#### 1. Hello Cube — 基础旋转立方体
+#### 1. Hello Cube — Basic Rotating Cube
 
-**文件**: [`examples/hello-cube.html`](./examples/hello-cube.html)
+**File**: [`examples/hello-cube.html`](./examples/hello-cube.html)
 
-**演示内容**:
-- PerspectiveCamera + WebGLRenderer 基础设置
-- MeshStandardMaterial 物理材质
-- DirectionalLight / PointLight / AmbientLight 三光源组合
-- EdgesGeometry 线框叠加显示
-- OrbitControls 带阻尼的相机交互
-- 场景雾效 (Fog)
-- 响应式 resize 处理
+**Demonstrates**:
+- PerspectiveCamera + WebGLRenderer basic setup
+- MeshStandardMaterial physically-based material
+- DirectionalLight / PointLight / AmbientLight three-light setup
+- EdgesGeometry wireframe overlay
+- OrbitControls with damping
+- Scene fog (Fog)
+- Responsive resize handling
 
 ```javascript
-// 核心代码片段：带阴影的旋转立方体
+// Core snippet: rotating cube with shadows
 const geometry = new THREE.BoxGeometry(2, 2, 2);
 const material = new THREE.MeshStandardMaterial({
   color: 0x4488ff, roughness: 0.4, metalness: 0.3
@@ -268,139 +270,139 @@ renderer.setAnimationLoop(() => {
 
 ---
 
-#### 2. Geometries — 所有内置几何体
+#### 2. Geometries — All Built-in Geometries
 
-**文件**: [`examples/geometries.html`](./examples/geometries.html)
+**File**: [`examples/geometries.html`](./examples/geometries.html)
 
-**演示内容**:
-- 15 种内置几何体网格展示
-- EdgesGeometry 线框叠加
-- Raycaster 悬停 tooltip 显示几何体名称
-- HSL 色系自动配色
+**Demonstrates**:
+- 15 built-in geometry grid display
+- EdgesGeometry wireframe overlay
+- Raycaster hover tooltip showing geometry name
+- HSL auto-coloring
 
-**展示的几何体**:
+**Geometry showcase**:
 
-| 几何体 | 构造函数 | 关键参数 |
-|--------|---------|---------|
-| 立方体 | `BoxGeometry(w, h, d)` | 宽高深 |
-| 球体 | `SphereGeometry(r, wSeg, hSeg)` | 半径、分段数 |
-| 圆柱 | `CylinderGeometry(rTop, rBot, h)` | 上下半径、高 |
-| 圆锥 | `ConeGeometry(r, h, seg)` | 半径、高度 |
-| 圆环 | `TorusGeometry(r, tube, rSeg, tSeg)` | 主半径、管半径 |
-| 环面结 | `TorusKnotGeometry(r, tube, p, q)` | 形态参数 p/q |
-| 二十面体 | `IcosahedronGeometry(r, detail)` | 细分层级 |
-| 胶囊 | `CapsuleGeometry(r, len, capSeg, radSeg)` | 半径、长度 |
-| 平面 | `PlaneGeometry(w, h, wSeg, hSeg)` | 宽高、分段 |
-| 圆形 | `CircleGeometry(r, seg)` | 半径、分段 |
-| 旋转体 | `LatheGeometry(points, seg)` | 轮廓点数组 |
+| Geometry | Constructor | Key Params |
+|----------|------------|-----------|
+| Box | `BoxGeometry(w, h, d)` | width, height, depth |
+| Sphere | `SphereGeometry(r, wSeg, hSeg)` | radius, segments |
+| Cylinder | `CylinderGeometry(rTop, rBot, h)` | top/bottom radius, height |
+| Cone | `ConeGeometry(r, h, seg)` | radius, height |
+| Torus | `TorusGeometry(r, tube, rSeg, tSeg)` | major radius, tube radius |
+| TorusKnot | `TorusKnotGeometry(r, tube, p, q)` | shape params p/q |
+| Icosahedron | `IcosahedronGeometry(r, detail)` | subdivision level |
+| Capsule | `CapsuleGeometry(r, len, capSeg, radSeg)` | radius, length |
+| Plane | `PlaneGeometry(w, h, wSeg, hSeg)` | width, height, segments |
+| Circle | `CircleGeometry(r, seg)` | radius, segments |
+| Lathe | `LatheGeometry(points, seg)` | profile point array |
 
 ---
 
-#### 3. Materials — 材质类型对比
+#### 3. Materials — Material Type Comparison
 
-**文件**: [`examples/materials.html`](./examples/materials.html)
+**File**: [`examples/materials.html`](./examples/materials.html)
 
-**演示内容**:
-- 11 种材质类型并排对比
-- 绕场公转点光源动态打光
-- 投影 HTML label 覆层
+**Demonstrates**:
+- 11 material types side-by-side comparison
+- Orbiting point light for dynamic lighting
+- Projected HTML label overlay
 
-**展示的材质**:
+**Material showcase**:
 
-| 材质 | 特点 | 适用场景 |
-|------|------|---------|
-| `MeshBasicMaterial` | 无光照、纯色 | UI 元素、调试 |
-| `MeshNormalMaterial` | 法线可视化 | 调试法线方向 |
-| `MeshLambertMaterial` | 漫反射（Gouraud） | 低性能设备 |
-| `MeshPhongMaterial` | 高光（Phong） | 塑料、光滑表面 |
-| `MeshStandardMaterial` | PBR 金属粗糙度 | 通用物理材质 |
-| `MeshPhysicalMaterial` | 清漆/透射/虹彩 | 汽车漆、玻璃 |
-| `MeshToonMaterial` | 卡通分级着色 | 卡通渲染 |
-| `MeshDepthMaterial` | 深度可视化 | 后处理效果 |
-| `wireframe` | 线框模式 | 结构调试 |
+| Material | Characteristics | Use Case |
+|----------|----------------|---------|
+| `MeshBasicMaterial` | No lighting, flat color | UI elements, debug |
+| `MeshNormalMaterial` | Normal visualization | Debug normals |
+| `MeshLambertMaterial` | Diffuse (Gouraud) | Low-end devices |
+| `MeshPhongMaterial` | Specular highlights (Phong) | Plastic, smooth surfaces |
+| `MeshStandardMaterial` | PBR metalness/roughness | General physically-based |
+| `MeshPhysicalMaterial` | Clearcoat/transmission/iridescence | Car paint, glass |
+| `MeshToonMaterial` | Cartoon step shading | Cel shading |
+| `MeshDepthMaterial` | Depth visualization | Post-processing effects |
+| `wireframe` | Wireframe mode | Structure debugging |
 
 ```javascript
-// PBR 玻璃材质示例
+// PBR glass material example
 const glassMat = new THREE.MeshPhysicalMaterial({
   color: 0xffffff,
-  transmission: 0.95,   // 透射率
-  thickness: 0.5,        // 厚度（折射用）
+  transmission: 0.95,   // transmission rate
+  thickness: 0.5,        // thickness (for refraction)
   roughness: 0.05,
-  ior: 1.5,              // 折射率
+  ior: 1.5,              // index of refraction
   transparent: true,
 });
 ```
 
 ---
 
-#### 4. Lights — 所有光源类型
+#### 4. Lights — All Light Source Types
 
-**文件**: [`examples/lights.html`](./examples/lights.html)
+**File**: [`examples/lights.html`](./examples/lights.html)
 
-**演示内容**:
-- 5 种光源类型，复选框独立开关
-- 所有光源附带可视化 Helper
-- 曝光度滑块实时调节
+**Demonstrates**:
+- 5 light types, each with individual checkbox toggle
+- All lights with visible Helper overlays
+- Exposure slider for real-time adjustment
 
-**光源对比**:
+**Light comparison**:
 
-| 光源 | 特点 | 是否支持阴影 |
-|------|------|------------|
-| `AmbientLight(color, intensity)` | 全局环境光 | ❌ |
-| `DirectionalLight(color, intensity)` | 平行光（模拟太阳） | ✅ |
-| `PointLight(color, intensity, distance)` | 点光源（灯泡） | ✅ |
-| `SpotLight(color, intensity, dist, angle)` | 聚光灯 | ✅ |
-| `HemisphereLight(sky, ground, intensity)` | 半球光（天空/地面） | ❌ |
-| `RectAreaLight(color, intensity, w, h)` | 矩形面光 | ❌ |
+| Light | Characteristics | Shadow Support |
+|-------|----------------|---------------|
+| `AmbientLight(color, intensity)` | Global ambient | ❌ |
+| `DirectionalLight(color, intensity)` | Parallel light (sun) | ✅ |
+| `PointLight(color, intensity, distance)` | Point light (bulb) | ✅ |
+| `SpotLight(color, intensity, dist, angle)` | Spotlight | ✅ |
+| `HemisphereLight(sky, ground, intensity)` | Sky/ground hemisphere | ❌ |
+| `RectAreaLight(color, intensity, w, h)` | Rectangular area light | ❌ |
 
 ```javascript
-// DirectionalLight 阴影配置
+// DirectionalLight shadow configuration
 const light = new THREE.DirectionalLight(0xffffff, 2);
 light.castShadow = true;
 light.shadow.mapSize.width  = 2048;
 light.shadow.mapSize.height = 2048;
 light.shadow.camera.near = 0.5;
 light.shadow.camera.far  = 50;
-light.shadow.bias = -0.001;  // 消除 shadow acne
+light.shadow.bias = -0.001;  // eliminate shadow acne
 ```
 
 ---
 
-#### 5. Shadows — 阴影映射
+#### 5. Shadows — Shadow Mapping
 
-**文件**: [`examples/shadows.html`](./examples/shadows.html)
+**File**: [`examples/shadows.html`](./examples/shadows.html)
 
-**演示内容**:
-- 4 种阴影类型切换：BasicShadowMap / PCFShadowMap / PCFSoftShadowMap / VSMShadowMap
-- Shadow Map 分辨率、偏移(bias) 实时调节
-- CameraHelper 可视化阴影相机视锥体
+**Demonstrates**:
+- 4 shadow types: BasicShadowMap / PCFShadowMap / PCFSoftShadowMap / VSMShadowMap
+- Shadow map resolution and bias real-time adjustment
+- CameraHelper to visualize shadow camera frustum
 
 ```javascript
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap; // 推荐
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // recommended
 
-// 物体开启投影/接收
+// Enable cast/receive on objects
 mesh.castShadow    = true;
 mesh.receiveShadow = true;
 ```
 
 ---
 
-### 中级示例 (Intermediate)
+### Intermediate Examples
 
 ---
 
-#### 6. Textures — 程序纹理
+#### 6. Textures — Procedural Textures
 
-**文件**: [`examples/textures.html`](./examples/textures.html)
+**File**: [`examples/textures.html`](./examples/textures.html)
 
-**演示内容**:
-- 用 Canvas 2D API 程序生成 6 种纹理（无需外部图片）
-- 棋盘格 / 径向渐变 / 网格 / 像素噪声 / HSL 条纹 / UV 编号
-- CanvasTexture 实时更新
+**Demonstrates**:
+- 6 procedural textures generated with Canvas 2D API (no external images)
+- Checkerboard / Radial gradient / Grid / Pixel noise / HSL stripes / UV numbering
+- CanvasTexture real-time update
 
 ```javascript
-// 程序棋盘纹理
+// Procedural checkerboard texture
 function makeCheckerTex(size = 256, squares = 8) {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;
@@ -418,49 +420,49 @@ function makeCheckerTex(size = 256, squares = 8) {
 
 ---
 
-#### 7. Orbit Controls — 相机控制器
+#### 7. Orbit Controls — Camera Controller
 
-**文件**: [`examples/orbit-controls.html`](./examples/orbit-controls.html)
+**File**: [`examples/orbit-controls.html`](./examples/orbit-controls.html)
 
-**演示内容**:
-- OrbitControls 所有属性面板控制
-- 阻尼/自动旋转/平移/缩放开关
-- 旋转/平移/缩放速度调节
-- 距离限制 (minDistance / maxDistance)
+**Demonstrates**:
+- OrbitControls full property panel control
+- Damping / auto-rotate / pan / zoom toggles
+- Rotation / pan / zoom speed adjustment
+- Distance limits (minDistance / maxDistance)
 
 ```javascript
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;   // 开启阻尼（惯性）
+controls.enableDamping = true;   // enable damping (inertia)
 controls.dampingFactor  = 0.05;
 controls.autoRotate     = true;
 controls.autoRotateSpeed = 2.0;
 controls.minDistance    = 2;
 controls.maxDistance    = 50;
-controls.maxPolarAngle  = Math.PI / 2; // 禁止翻转到地面以下
+controls.maxPolarAngle  = Math.PI / 2; // prevent flipping below ground
 
-// ⚠️ 必须在动画循环中调用
+// ⚠️ Must call in animation loop
 renderer.setAnimationLoop(() => {
-  controls.update(); // 必须！
+  controls.update(); // required!
   renderer.render(scene, camera);
 });
 ```
 
 ---
 
-#### 8. Particles — 粒子系统
+#### 8. Particles — Particle System
 
-**文件**: [`examples/particles.html`](./examples/particles.html)
+**File**: [`examples/particles.html`](./examples/particles.html)
 
-**演示内容**:
-- 5 万粒子实时动画
-- 4 种分布模式：球形 / 银河螺旋 / 波浪 / 立方体
-- 粒子大小 / 速度 / 颜色控制
-- AdditiveBlending 叠加混合
+**Demonstrates**:
+- 50,000 particles with real-time animation
+- 4 distribution modes: Sphere / Galaxy spiral / Wave / Cube
+- Particle size / speed / color controls
+- AdditiveBlending additive blending
 
 ```javascript
-// Points 粒子系统
+// Points particle system
 const count = 50000;
 const positions = new Float32Array(count * 3);
 const colors    = new Float32Array(count * 3);
@@ -486,15 +488,15 @@ scene.add(new THREE.Points(geo, mat));
 
 ---
 
-#### 9. Raycasting — 鼠标拾取
+#### 9. Raycasting — Mouse Picking
 
-**文件**: [`examples/raycasting.html`](./examples/raycasting.html)
+**File**: [`examples/raycasting.html`](./examples/raycasting.html)
 
-**演示内容**:
-- Raycaster.setFromCamera() 鼠标射线投射
-- 悬停高亮（emissive 发光）
-- 点击选中 + 浮动 tooltip 显示世界坐标
-- 指针样式动态切换
+**Demonstrates**:
+- `Raycaster.setFromCamera()` mouse ray casting
+- Hover highlight (emissive glow)
+- Click to select + floating tooltip showing world coordinates
+- Dynamic pointer cursor switching
 
 ```javascript
 const raycaster = new THREE.Raycaster();
@@ -505,35 +507,35 @@ window.addEventListener('mousemove', (e) => {
   pointer.y = -(e.clientY / innerHeight) * 2 + 1;
 });
 
-// 在动画循环中
+// In animation loop
 raycaster.setFromCamera(pointer, camera);
 const hits = raycaster.intersectObjects(pickableObjects);
 if (hits.length > 0) {
   const { object, point, distance } = hits[0];
-  object.material.emissive.setHex(0x331122); // 高亮
+  object.material.emissive.setHex(0x331122); // highlight
 }
 ```
 
 ---
 
-#### 10. Animation Mixer — 关键帧动画
+#### 10. Animation Mixer — Keyframe Animation
 
-**文件**: [`examples/animation-mixer.html`](./examples/animation-mixer.html)
+**File**: [`examples/animation-mixer.html`](./examples/animation-mixer.html)
 
-**演示内容**:
-- AnimationMixer 驱动多个物体
-- VectorKeyframeTrack（位置）
-- QuaternionKeyframeTrack（旋转）
-- 播放/暂停/停止/速度/循环模式 UI
+**Demonstrates**:
+- AnimationMixer driving multiple objects
+- VectorKeyframeTrack (position)
+- QuaternionKeyframeTrack (rotation)
+- Play / Pause / Stop / Speed / Loop mode UI
 
 ```javascript
 const mixer = new THREE.AnimationMixer(scene);
 
-// 位置关键帧
+// Position keyframe track
 const posTrack = new THREE.VectorKeyframeTrack(
-  '.position',           // 目标属性路径
-  [0, 1, 2, 3],          // 时间点（秒）
-  [0,0,0,  0,3,0,  0,0,0, 0,1,0]  // 对应值（x,y,z 三元组）
+  '.position',           // target property path
+  [0, 1, 2, 3],          // time points (seconds)
+  [0,0,0,  0,3,0,  0,0,0, 0,1,0]  // values (x,y,z triplets)
 );
 
 const clip = new THREE.AnimationClip('bounce', 3, [posTrack]);
@@ -541,51 +543,51 @@ const action = mixer.clipAction(clip, targetMesh);
 action.setLoop(THREE.LoopRepeat, Infinity);
 action.play();
 
-// 动画循环中
+// In animation loop
 const delta = clock.getDelta();
 mixer.update(delta);
 ```
 
 ---
 
-#### 11. Morph Targets — 顶点变形
+#### 11. Morph Targets — Vertex Morphing
 
-**文件**: [`examples/morph-targets.html`](./examples/morph-targets.html)
+**File**: [`examples/morph-targets.html`](./examples/morph-targets.html)
 
-**演示内容**:
-- 4 个 morphAttribute 变形目标：膨胀/尖刺/扭曲/压扁
-- morphTargetInfluences 权重滑块
-- 自动动画模式（多目标同时混合）
+**Demonstrates**:
+- 4 morphAttribute targets: Inflate / Spike / Twist / Squash
+- `morphTargetInfluences` weight sliders
+- Auto-animation mode (blend multiple targets simultaneously)
 
 ```javascript
 const geo = new THREE.SphereGeometry(1.5, 64, 64);
 
-// 定义变形目标（相对偏移量）
+// Define morph targets (relative offsets)
 const inflateDisp = new Float32Array(geo.attributes.position.count * 3);
-// ... 填充每顶点偏移量 ...
+// ... fill per-vertex offsets ...
 
 geo.morphAttributes.position = [
   new THREE.BufferAttribute(inflateDisp, 3),
   new THREE.BufferAttribute(spikeDisp, 3),
 ];
-geo.morphTargetsRelative = true; // 相对模式
+geo.morphTargetsRelative = true; // relative mode
 
 const mesh = new THREE.Mesh(geo, material);
-mesh.morphTargetInfluences[0] = 0.5; // 0~1 权重
+mesh.morphTargetInfluences[0] = 0.5; // 0~1 weight
 mesh.morphTargetInfluences[1] = 0.3;
 ```
 
 ---
 
-#### 12. Instanced Mesh — 大规模实例渲染
+#### 12. Instanced Mesh — Large-Scale Instance Rendering
 
-**文件**: [`examples/instanced-mesh.html`](./examples/instanced-mesh.html)
+**File**: [`examples/instanced-mesh.html`](./examples/instanced-mesh.html)
 
-**演示内容**:
-- 最多 10 万实例，单次 Draw Call
-- 每实例独立位置、旋转、缩放（Matrix4）
-- 每实例独立颜色（setColorAt）
-- FPS 计数器验证性能优势
+**Demonstrates**:
+- Up to 100,000 instances, single draw call
+- Per-instance independent position, rotation, scale (Matrix4)
+- Per-instance independent color (setColorAt)
+- FPS counter to verify performance advantage
 
 ```javascript
 const count = 10000;
@@ -596,14 +598,14 @@ const dummy = new THREE.Object3D();
 const color = new THREE.Color();
 
 for (let i = 0; i < count; i++) {
-  // 设置变换矩阵
+  // Set transform matrix
   dummy.position.set(rx, ry, rz);
   dummy.rotation.set(rx, ry, 0);
   dummy.scale.setScalar(Math.random() * 2 + 0.5);
   dummy.updateMatrix();
   iMesh.setMatrixAt(i, dummy.matrix);
 
-  // 设置颜色
+  // Set color
   color.setHSL(i / count, 0.8, 0.5);
   iMesh.setColorAt(i, color);
 }
@@ -615,39 +617,39 @@ scene.add(iMesh);
 
 ---
 
-#### 13. Fog & Skybox — 雾效与大气
+#### 13. Fog & Skybox — Fog Effects & Atmosphere
 
-**文件**: [`examples/fog-skybox.html`](./examples/fog-skybox.html)
+**File**: [`examples/fog-skybox.html`](./examples/fog-skybox.html)
 
-**演示内容**:
-- Linear Fog vs FogExp2 切换对比
-- 4 种天空预设（日间/黄昏/夜晚/阴天）
-- 树林街道场景 + 路灯点光源
-- 自动行走相机漫游
+**Demonstrates**:
+- Linear Fog vs FogExp2 toggle comparison
+- 4 sky presets (Day / Dusk / Night / Overcast)
+- Forest road scene + streetlight point sources
+- Auto-walking camera flythrough
 
 ```javascript
-// 线性雾（near ~ far 范围内从无到全雾）
+// Linear fog (full fog from none between near ~ far)
 scene.fog = new THREE.Fog(0x87ceeb, 10, 80);
 
-// 指数雾（密度均匀衰减，更自然）
+// Exponential fog (uniform density falloff, more natural)
 scene.fog = new THREE.FogExp2(0x050514, 0.025);
 
-// 雾色要与场景背景色匹配
+// Fog color should match scene background color
 scene.background = new THREE.Color(scene.fog.color);
 ```
 
 ---
 
-#### 14. GLTF Loader — 加载 3D 模型
+#### 14. GLTF Loader — Load 3D Models
 
-**文件**: [`examples/gltf-loader.html`](./examples/gltf-loader.html)
+**File**: [`examples/gltf-loader.html`](./examples/gltf-loader.html)
 
-**演示内容**:
-- GLTFLoader + DRACOLoader 压缩格式支持
-- LoadingManager 进度回调
-- 加载 KhronosGroup 官方示例模型（BoxAnimated.gltf）
-- gltf.scene 场景树遍历显示
-- 模型动画 AnimationMixer 驱动
+**Demonstrates**:
+- GLTFLoader + DRACOLoader for compressed format support
+- LoadingManager progress callbacks
+- Loads KhronosGroup official sample model (BoxAnimated.gltf)
+- `gltf.scene` scene tree traversal display
+- Model animation driven by AnimationMixer
 
 ```javascript
 import { GLTFLoader  } from 'three/addons/loaders/GLTFLoader.js';
@@ -668,7 +670,7 @@ loader.load(
     });
     scene.add(model);
 
-    // 播放动画
+    // Play animations
     const mixer = new THREE.AnimationMixer(model);
     gltf.animations.forEach(clip => mixer.clipAction(clip).play());
   },
@@ -679,18 +681,18 @@ loader.load(
 
 ---
 
-#### 15. Sprite Billboard — 精灵与公告板
+#### 15. Sprite Billboard — Sprites & Billboards
 
-**文件**: [`examples/sprite-billboard.html`](./examples/sprite-billboard.html)
+**File**: [`examples/sprite-billboard.html`](./examples/sprite-billboard.html)
 
-**演示内容**:
-- THREE.Sprite 始终朝向相机
-- Canvas 文字 label / 光晕粒子 / 图标三种类型
-- sizeAttenuation 距离缩放开关
-- 星球场景演示标注系统
+**Demonstrates**:
+- `THREE.Sprite` always faces camera
+- Three label types: Canvas text / halo particle / icon
+- `sizeAttenuation` distance scaling toggle
+- Planet scene demonstrating annotation system
 
 ```javascript
-// 创建文字标注精灵
+// Create text label sprite
 function makeLabelSprite(text) {
   const canvas = document.createElement('canvas');
   canvas.width = 256; canvas.height = 64;
@@ -712,25 +714,25 @@ function makeLabelSprite(text) {
 
 ---
 
-### 高级示例 (Advanced)
+### Advanced Examples
 
 ---
 
-#### 16. Custom Shader — GLSL 自定义着色器
+#### 16. Custom Shader — GLSL Custom Shaders
 
-**文件**: [`examples/custom-shader.html`](./examples/custom-shader.html)
+**File**: [`examples/custom-shader.html`](./examples/custom-shader.html)
 
-**演示内容**:
-- ShaderMaterial 顶点/片元着色器完整流程
-- 4 种 GLSL 效果预设：
-  - **Wave Displacement** — 正弦波顶点偏移
-  - **Plasma** — 多层正弦叠加等离子体
-  - **Fresnel / Rim Light** — 菲涅尔边缘发光
-  - **Hologram** — 扫描线 + 闪烁全息效果
-- uniforms 实时传递（时间/振幅/色相）
+**Demonstrates**:
+- Full ShaderMaterial vertex/fragment shader pipeline
+- 4 GLSL effect presets:
+  - **Wave Displacement** — sine wave vertex offset
+  - **Plasma** — multi-layer sine plasma effect
+  - **Fresnel / Rim Light** — Fresnel edge glow
+  - **Hologram** — scan lines + flickering hologram
+- Real-time uniform passing (time / amplitude / hue)
 
 ```glsl
-// 顶点着色器：Wave Displacement
+// Vertex shader: Wave Displacement
 uniform float u_time;
 uniform float u_amplitude;
 varying vec2 vUv;
@@ -748,7 +750,7 @@ void main() {
 ```
 
 ```javascript
-// JavaScript 端
+// JavaScript side
 const material = new THREE.ShaderMaterial({
   uniforms: {
     u_time:      { value: 0 },
@@ -759,23 +761,23 @@ const material = new THREE.ShaderMaterial({
   side: THREE.DoubleSide,
 });
 
-// 动画循环中更新
+// Update in animation loop
 material.uniforms.u_time.value += clock.getDelta();
 ```
 
 ---
 
-#### 17. Post-processing — 后期处理
+#### 17. Post-processing — Post Effects
 
-**文件**: [`examples/postprocessing.html`](./examples/postprocessing.html)
+**File**: [`examples/postprocessing.html`](./examples/postprocessing.html)
 
-**演示内容**:
-- EffectComposer 完整管线
-- UnrealBloomPass 泛光（threshold/strength/radius 控制）
-- FilmPass 胶片颗粒
-- GlitchPass 故障艺术效果
-- DotScreenPass 点阵屏幕
-- RGBShiftShader 色差
+**Demonstrates**:
+- Full EffectComposer pipeline
+- UnrealBloomPass bloom (threshold/strength/radius controls)
+- FilmPass film grain
+- GlitchPass glitch art effect
+- DotScreenPass dot-matrix screen
+- RGBShiftShader chromatic aberration
 
 ```javascript
 import { EffectComposer }  from 'three/addons/postprocessing/EffectComposer.js';
@@ -793,14 +795,14 @@ const bloom = new UnrealBloomPass(
   0.2    // threshold
 );
 composer.addPass(bloom);
-composer.addPass(new OutputPass()); // 最后一个 pass 负责色调映射输出
+composer.addPass(new OutputPass()); // last pass handles tone mapping output
 
-// 渲染时用 composer 替代 renderer
+// Use composer instead of renderer
 renderer.setAnimationLoop(() => {
-  composer.render(); // ← 替代 renderer.render(scene, camera)
+  composer.render(); // ← replaces renderer.render(scene, camera)
 });
 
-// Resize 时同步更新
+// Sync update on resize
 window.addEventListener('resize', () => {
   composer.setSize(innerWidth, innerHeight);
 });
@@ -808,18 +810,18 @@ window.addEventListener('resize', () => {
 
 ---
 
-#### 18. Environment Map — 环境贴图与反射
+#### 18. Environment Map — Environment Mapping & Reflections
 
-**文件**: [`examples/environment-map.html`](./examples/environment-map.html)
+**File**: [`examples/environment-map.html`](./examples/environment-map.html)
 
-**演示内容**:
-- PMREMGenerator 从全景图生成 PMREM 环境贴图
-- 程序生成等距柱状全景纹理（3 种天空预设）
-- scene.environment 全局环境光照
-- 金属度/粗糙度渐变球体展示 PBR 反射效果
+**Demonstrates**:
+- PMREMGenerator generating PMREM environment map from panorama
+- Procedurally generated equirectangular panorama (3 sky presets)
+- `scene.environment` global IBL
+- Metalness/roughness gradient sphere array showcasing PBR reflections
 
 ```javascript
-// 从等矩形全景图生成环境贴图
+// Generate environment map from equirectangular panorama
 const pmrem = new THREE.PMREMGenerator(renderer);
 pmrem.compileEquirectangularShader();
 
@@ -829,11 +831,11 @@ const equirectTex = new THREE.TextureLoader().load('hdr/env.jpg', (tex) => {
   pmrem.dispose();
   tex.dispose();
 
-  scene.environment = envMap;   // 所有 MeshStandardMaterial 自动使用
-  scene.background  = envMap;   // 同时作为天空背景
+  scene.environment = envMap;   // all MeshStandardMaterial uses automatically
+  scene.background  = envMap;   // also used as sky background
 });
 
-// 从 RGBELoader 加载 HDR 文件
+// Load HDR file with RGBELoader
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 new RGBELoader().load('env.hdr', (tex) => {
   const envMap = pmrem.fromEquirectangular(tex).texture;
@@ -843,23 +845,23 @@ new RGBELoader().load('env.hdr', (tex) => {
 
 ---
 
-#### 19. TSL Shader — 节点着色器
+#### 19. TSL Shader — Node-based Shaders
 
-**文件**: [`examples/tsl-shader.html`](./examples/tsl-shader.html)
+**File**: [`examples/tsl-shader.html`](./examples/tsl-shader.html)
 
-**演示内容**:
-- TSL（Three Shading Language）节点材质等效 GLSL 模式
-- 4 种效果：顶点波浪 / Simplex 噪声位移 / UV 渐变色 / 菲涅尔发光
-- 等效展示 TSL 节点图和 GLSL 实现的对应关系
+**Demonstrates**:
+- TSL (Three Shading Language) node material equivalent to GLSL mode
+- 4 effects: vertex wave / Simplex noise displacement / UV gradient color / Fresnel glow
+- Side-by-side comparison of TSL node graph and GLSL implementation
 
 ```javascript
-// TSL 写法（需要 WebGPURenderer 或 NodeMaterial）
+// TSL syntax (requires WebGPURenderer or NodeMaterial)
 import { MeshStandardNodeMaterial } from 'three/addons/nodes/materials/MeshStandardNodeMaterial.js';
 import { sin, time, positionLocal, normalLocal, vec3 } from 'three/addons/nodes/tsl/TSLBase.js';
 
 const mat = new MeshStandardNodeMaterial({ color: 0x4488ff });
 
-// 节点表达式：顶点 = 局部位置 + 法线 * sin(时间) * 0.2
+// Node expression: vertex = local position + normal * sin(time) * 0.2
 mat.positionNode = positionLocal.add(
   normalLocal.mul(sin(time).mul(0.2))
 );
@@ -867,18 +869,18 @@ mat.positionNode = positionLocal.add(
 
 ---
 
-#### 20. WebGPU Basics — WebGPU 渲染器
+#### 20. WebGPU Basics — WebGPU Renderer
 
-**文件**: [`examples/webgpu-basics.html`](./examples/webgpu-basics.html)
+**File**: [`examples/webgpu-basics.html`](./examples/webgpu-basics.html)
 
-**演示内容**:
-- WebGPURenderer 特性检测 + 自动降级 WebGL
-- 浏览器支持状态可视化指示器（绿色=WebGPU / 橙色=WebGL 降级）
-- 标准 Three.js 场景与 WebGPURenderer 完全兼容
-- 代码注释展示 WebGPU 初始化差异
+**Demonstrates**:
+- WebGPURenderer feature detection + automatic WebGL fallback
+- Browser support status visual indicator (green=WebGPU / orange=WebGL fallback)
+- Standard Three.js scene fully compatible with WebGPURenderer
+- Code comments showing WebGPU initialization differences
 
 ```javascript
-// WebGPU 检测 + 降级模式
+// WebGPU detection + fallback mode
 async function createRenderer() {
   if (navigator.gpu) {
     const adapter = await navigator.gpu.requestAdapter();
@@ -887,80 +889,80 @@ async function createRenderer() {
         'three/addons/renderers/webgpu/WebGPURenderer.js'
       );
       const renderer = new WebGPURenderer({ antialias: true });
-      await renderer.init(); // ⚠️ WebGPU 必须 await init()
+      await renderer.init(); // ⚠️ WebGPU requires await init()
       return renderer;
     }
   }
-  // 降级到 WebGL
+  // Fallback to WebGL
   return new THREE.WebGLRenderer({ antialias: true });
 }
 
 const renderer = await createRenderer();
 ```
 
-> **浏览器支持**: Chrome 113+ / Edge 113+ 支持 WebGPU；Firefox / Safari 暂用 WebGL 降级。
+> **Browser support**: Chrome 113+ / Edge 113+ support WebGPU; Firefox / Safari use WebGL fallback.
 
 ---
 
-## 参考文档
+## Reference Docs
 
-| 文档 | 内容 |
-|------|------|
-| [core-concepts.md](./references/core-concepts.md) | Scene、Camera、Renderer、坐标系、场景图、最小模板 |
-| [geometries-materials.md](./references/geometries-materials.md) | 所有内置几何体构造函数、自定义 BufferGeometry、材质属性表 |
-| [lights-shadows.md](./references/lights-shadows.md) | 光源类型、阴影配置模式、SpotLight/RectAreaLight 详解 |
-| [animations.md](./references/animations.md) | AnimationMixer、KeyframeTrack、动作 API、形态目标、骨骼动画 |
-| [loaders.md](./references/loaders.md) | TextureLoader、GLTFLoader、OBJLoader、FBXLoader、RGBELoader、FontLoader |
-| [postprocessing.md](./references/postprocessing.md) | EffectComposer 搭建、所有 Pass 速览、ShaderPass、OutlinePass |
-| [performance.md](./references/performance.md) | InstancedMesh、LOD、内存释放、纹理优化、Stats、视锥剔除 |
+| Document | Contents |
+|----------|---------|
+| [core-concepts.md](./references/core-concepts.md) | Scene, Camera, Renderer, coordinate system, scene graph, minimal template |
+| [geometries-materials.md](./references/geometries-materials.md) | All built-in geometry constructors, custom BufferGeometry, material property table |
+| [lights-shadows.md](./references/lights-shadows.md) | Light types, shadow configuration modes, SpotLight/RectAreaLight details |
+| [animations.md](./references/animations.md) | AnimationMixer, KeyframeTrack, action API, morph targets, skeletal animation |
+| [loaders.md](./references/loaders.md) | TextureLoader, GLTFLoader, OBJLoader, FBXLoader, RGBELoader, FontLoader |
+| [postprocessing.md](./references/postprocessing.md) | EffectComposer setup, all Pass overview, ShaderPass, OutlinePass |
+| [performance.md](./references/performance.md) | InstancedMesh, LOD, memory disposal, texture optimization, Stats, frustum culling |
 
 ---
 
-## API 速查
+## API Cheatsheet
 
-### 场景图核心类
+### Core Scene Classes
 
 ```javascript
-// 场景
+// Scene
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb); // 纯色背景
-scene.fog = new THREE.FogExp2(0x87ceeb, 0.02); // 指数雾
+scene.background = new THREE.Color(0x87ceeb); // solid color background
+scene.fog = new THREE.FogExp2(0x87ceeb, 0.02); // exponential fog
 
-// 相机
+// Camera
 const cam = new THREE.PerspectiveCamera(fov, aspect, near, far);
 // fov=75 aspect=innerWidth/innerHeight near=0.1 far=1000
 
-// 渲染器
+// Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); // 限制最大 2x
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); // cap at 2x
 renderer.shadowMap.enabled = true;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 ```
 
-### 网格与材质
+### Mesh & Material
 
 ```javascript
 const mesh = new THREE.Mesh(geometry, material);
 mesh.position.set(x, y, z);
-mesh.rotation.set(rx, ry, rz); // 欧拉角（弧度）
-mesh.scale.setScalar(2);        // 等比缩放
+mesh.rotation.set(rx, ry, rz); // Euler angles (radians)
+mesh.scale.setScalar(2);        // uniform scale
 mesh.castShadow = true;
 mesh.receiveShadow = true;
 scene.add(mesh);
 ```
 
-### 渲染循环
+### Render Loop
 
 ```javascript
 const clock = new THREE.Clock();
 
 renderer.setAnimationLoop(() => {
-  const delta = clock.getDelta();    // 帧间隔（秒）
-  const elapsed = clock.getElapsedTime(); // 累计时间（秒）
+  const delta = clock.getDelta();       // frame delta (seconds)
+  const elapsed = clock.getElapsedTime(); // total elapsed (seconds)
 
-  // 更新逻辑...
+  // Update logic...
   mixer?.update(delta);
   controls.update();
 
@@ -968,10 +970,10 @@ renderer.setAnimationLoop(() => {
 });
 ```
 
-### 内存清理
+### Memory Cleanup
 
 ```javascript
-// 切换场景或销毁对象时务必手动释放
+// Always manually dispose when switching scenes or destroying objects
 function disposeMesh(mesh) {
   mesh.geometry.dispose();
   if (Array.isArray(mesh.material)) {
@@ -986,26 +988,26 @@ function disposeMesh(mesh) {
   mesh.parent?.remove(mesh);
 }
 
-// 整个场景
+// Entire renderer
 renderer.dispose();
 renderer.forceContextLoss();
 ```
 
 ---
 
-## 官方资源
+## Official Resources
 
-| 链接 | 描述 |
-|------|------|
-| [threejs.org](https://threejs.org/) | 官网主页 |
-| [threejs.org/docs](https://threejs.org/docs/) | API 文档 |
-| [threejs.org/examples](https://threejs.org/examples/) | 官方示例库（300+） |
-| [threejs.org/manual](https://threejs.org/manual/) | 入门教程手册 |
-| [discourse.threejs.org](https://discourse.threejs.org/) | 官方论坛 |
-| [github.com/mrdoob/three.js](https://github.com/mrdoob/three.js) | GitHub 仓库 |
+| Link | Description |
+|------|------------|
+| [threejs.org](https://threejs.org/) | Official homepage |
+| [threejs.org/docs](https://threejs.org/docs/) | API documentation |
+| [threejs.org/examples](https://threejs.org/examples/) | Official examples (300+) |
+| [threejs.org/manual](https://threejs.org/manual/) | Getting started manual |
+| [discourse.threejs.org](https://discourse.threejs.org/) | Official forum |
+| [github.com/mrdoob/three.js](https://github.com/mrdoob/three.js) | GitHub repository |
 
 ---
 
 <p align="center">
-  <sub>Three.js r167 · CDN: cdn.jsdelivr.net/npm/three@0.167.1 · 20 示例 · 7 参考文档</sub>
+  <sub>Three.js r167 · CDN: cdn.jsdelivr.net/npm/three@0.167.1 · 20 Examples · 7 Reference Docs</sub>
 </p>
