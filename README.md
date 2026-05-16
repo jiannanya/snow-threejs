@@ -36,7 +36,51 @@ This skill library provides 20 ready-to-run HTML examples and 7 reference docume
 <a href="./examples/shadows.html"><img src="./images/shadows.png" width="100%"></a><br>
 <b>Shadows</b><br><sub>Shadow mapping &amp; soft/hard shadows</sub>
 </td>
-<td></td><td></td><td></td>
+<td align="center" width="25%">
+<a href="./examples/axes-helpers.html"><img src="./images/axes-helpers.png" width="100%"></a><br>
+<b>Axes Helpers</b><br><sub>AxesHelper · GridHelper · ArrowHelper · BoxHelper</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/wireframe-mode.html"><img src="./images/wireframe-mode.png" width="100%"></a><br>
+<b>Wireframe Mode</b><br><sub>Solid · WireframeGeometry · EdgesGeometry</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/groups-hierarchy.html"><img src="./images/groups-hierarchy.png" width="100%"></a><br>
+<b>Groups &amp; Hierarchy</b><br><sub>Parent-child transforms · Solar system</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/vertex-colors.html"><img src="./images/vertex-colors.png" width="100%"></a><br>
+<b>Vertex Colors</b><br><sub>Per-vertex color painting · HSL/Gradient/Noise</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/transparent-blend.html"><img src="./images/transparent-blend.png" width="100%"></a><br>
+<b>Transparency &amp; Blending</b><br><sub>opacity · NormalBlend · AdditiveBlend</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/clock-easing.html"><img src="./images/clock-easing.png" width="100%"></a><br>
+<b>Clock &amp; Easing</b><br><sub>THREE.Clock · 6 easing functions</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/background-modes.html"><img src="./images/background-modes.png" width="100%"></a><br>
+<b>Background Modes</b><br><sub>Solid · Gradient · CubeMap backgrounds</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/simple-physics.html"><img src="./images/simple-physics.png" width="100%"></a><br>
+<b>Simple Physics</b><br><sub>Gravity · Elastic bounce · Wall collision</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/multi-viewport.html"><img src="./images/multi-viewport.png" width="100%"></a><br>
+<b>Multi Viewport</b><br><sub>Split-screen scissor · Perspective + Ortho</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/css2d-labels.html"><img src="./images/css2d-labels.png" width="100%"></a><br>
+<b>CSS2D Labels</b><br><sub>CSS2DRenderer · 3D projected planet labels</sub>
+</td>
+<td></td>
 </tr>
 </table>
 
@@ -88,7 +132,50 @@ This skill library provides 20 ready-to-run HTML examples and 7 reference docume
 <a href="./examples/sprite-billboard.html"><img src="./images/sprite-billboard.png" width="100%"></a><br>
 <b>Sprite Billboard</b><br><sub>Sprites &amp; billboard labels</sub>
 </td>
-<td></td><td></td>
+<td align="center" width="25%">
+<a href="./examples/curve-path.html"><img src="./images/curve-path.png" width="100%"></a><br>
+<b>Curve Path</b><br><sub>CatmullRomCurve3 · TubeGeometry · path following</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/shape-extrude.html"><img src="./images/shape-extrude.png" width="100%"></a><br>
+<b>Shape Extrude</b><br><sub>THREE.Shape · ExtrudeGeometry · bevel</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/lod.html"><img src="./images/lod.png" width="100%"></a><br>
+<b>LOD</b><br><sub>THREE.LOD · level-of-detail by distance</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/cube-camera.html"><img src="./images/cube-camera.png" width="100%"></a><br>
+<b>Cube Camera</b><br><sub>Live environment reflections · CubeCamera</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/water-surface.html"><img src="./images/water-surface.png" width="100%"></a><br>
+<b>Water Surface</b><br><sub>ShaderMaterial wave displacement · foam</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/outline-select.html"><img src="./images/outline-select.png" width="100%"></a><br>
+<b>Outline Select</b><br><sub>OutlinePass · click/hover selection highlight</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/render-target.html"><img src="./images/render-target.png" width="100%"></a><br>
+<b>Render Target</b><br><sub>WebGLRenderTarget · off-screen security camera</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/skeleton-anim.html"><img src="./images/skeleton-anim.png" width="100%"></a><br>
+<b>Skeleton Animation</b><br><sub>SkinnedMesh · Bone hierarchy · skinning</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/normal-map.html"><img src="./images/normal-map.png" width="100%"></a><br>
+<b>Normal Map</b><br><sub>Procedural normal maps · surface detail</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/audio-visualizer.html"><img src="./images/audio-visualizer.png" width="100%"></a><br>
+<b>Audio Visualizer</b><br><sub>Web Audio FFT → 3D bar visualization</sub>
+</td>
 </tr>
 </table>
 
@@ -118,7 +205,51 @@ This skill library provides 20 ready-to-run HTML examples and 7 reference docume
 <a href="./examples/webgpu-basics.html"><img src="./images/webgpu-basics.png" width="100%"></a><br>
 <b>WebGPU Basics</b><br><sub>WebGPU renderer + fallback</sub>
 </td>
-<td></td><td></td><td></td>
+<td align="center" width="25%">
+<a href="./examples/procedural-terrain.html"><img src="./images/procedural-terrain.png" width="100%"></a><br>
+<b>Procedural Terrain</b><br><sub>Multi-octave noise · heightmap · height coloring</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/text-3d.html"><img src="./images/text-3d.png" width="100%"></a><br>
+<b>3D Text</b><br><sub>FontLoader · TextGeometry · bevel · animation</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/fat-lines.html"><img src="./images/fat-lines.png" width="100%"></a><br>
+<b>Fat Lines</b><br><sub>Line2 · LineMaterial · configurable width · dashed</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/sky-atmosphere.html"><img src="./images/sky-atmosphere.png" width="100%"></a><br>
+<b>Sky Atmosphere</b><br><sub>Sky shader · sun position · Rayleigh scattering</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/procedural-city.html"><img src="./images/procedural-city.png" width="100%"></a><br>
+<b>Procedural City</b><br><sub>Random buildings · street grid · night lights</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/shader-extend.html"><img src="./images/shader-extend.png" width="100%"></a><br>
+<b>Shader Extend</b><br><sub>onBeforeCompile · GLSL injection · 5 effects</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/depth-of-field.html"><img src="./images/depth-of-field.png" width="100%"></a><br>
+<b>Depth of Field</b><br><sub>BokehPass · EffectComposer · focus control</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/texture-atlas.html"><img src="./images/texture-atlas.png" width="100%"></a><br>
+<b>Texture Atlas</b><br><sub>Sprite sheet · UV offset animation · billboards</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/particle-emitter.html"><img src="./images/particle-emitter.png" width="100%"></a><br>
+<b>Particle Emitter</b><br><sub>Pool recycling · lifetime · fade · physics</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/multi-material.html"><img src="./images/multi-material.png" width="100%"></a><br>
+<b>Multi Material</b><br><sub>Per-face material groups · Box/Cylinder/Cone</sub>
+</td>
+<td></td>
 </tr>
 </table>
 
@@ -901,166 +1032,6 @@ const renderer = await createRenderer();
 ```
 
 > **Browser support**: Chrome 113+ / Edge 113+ support WebGPU; Firefox / Safari use WebGL fallback.
-
----
-
-## New Examples (30 Additional)
-
-### New Beginner Examples
-
-<table>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/axes-helpers.html"><img src="./images/axes-helpers.png" width="100%"></a><br>
-<b>Axes Helpers</b><br><sub>AxesHelper · GridHelper · ArrowHelper · BoxHelper</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/wireframe-mode.html"><img src="./images/wireframe-mode.png" width="100%"></a><br>
-<b>Wireframe Mode</b><br><sub>Solid · WireframeGeometry · EdgesGeometry</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/groups-hierarchy.html"><img src="./images/groups-hierarchy.png" width="100%"></a><br>
-<b>Groups & Hierarchy</b><br><sub>Parent-child transforms · Solar system</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/vertex-colors.html"><img src="./images/vertex-colors.png" width="100%"></a><br>
-<b>Vertex Colors</b><br><sub>Per-vertex color painting · HSL/Gradient/Noise</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/transparent-blend.html"><img src="./images/transparent-blend.png" width="100%"></a><br>
-<b>Transparency & Blending</b><br><sub>opacity · NormalBlend · AdditiveBlend</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/clock-easing.html"><img src="./images/clock-easing.png" width="100%"></a><br>
-<b>Clock & Easing</b><br><sub>THREE.Clock · 6 easing functions</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/background-modes.html"><img src="./images/background-modes.png" width="100%"></a><br>
-<b>Background Modes</b><br><sub>Solid · Gradient · CubeMap backgrounds</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/simple-physics.html"><img src="./images/simple-physics.png" width="100%"></a><br>
-<b>Simple Physics</b><br><sub>Gravity · Elastic bounce · Wall collision</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/multi-viewport.html"><img src="./images/multi-viewport.png" width="100%"></a><br>
-<b>Multi Viewport</b><br><sub>Split-screen scissor · Perspective + Ortho</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/css2d-labels.html"><img src="./images/css2d-labels.png" width="100%"></a><br>
-<b>CSS2D Labels</b><br><sub>CSS2DRenderer · 3D projected planet labels</sub>
-</td>
-<td></td><td></td>
-</tr>
-</table>
-
-### New Intermediate Examples
-
-<table>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/curve-path.html"><img src="./images/curve-path.png" width="100%"></a><br>
-<b>Curve Path</b><br><sub>CatmullRomCurve3 · TubeGeometry · path following</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/shape-extrude.html"><img src="./images/shape-extrude.png" width="100%"></a><br>
-<b>Shape Extrude</b><br><sub>THREE.Shape · ExtrudeGeometry · bevel</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/lod.html"><img src="./images/lod.png" width="100%"></a><br>
-<b>LOD</b><br><sub>THREE.LOD · level-of-detail by distance</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/cube-camera.html"><img src="./images/cube-camera.png" width="100%"></a><br>
-<b>Cube Camera</b><br><sub>Live environment reflections · CubeCamera</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/water-surface.html"><img src="./images/water-surface.png" width="100%"></a><br>
-<b>Water Surface</b><br><sub>ShaderMaterial wave displacement · foam</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/outline-select.html"><img src="./images/outline-select.png" width="100%"></a><br>
-<b>Outline Select</b><br><sub>OutlinePass · click/hover selection highlight</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/render-target.html"><img src="./images/render-target.png" width="100%"></a><br>
-<b>Render Target</b><br><sub>WebGLRenderTarget · off-screen security camera</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/skeleton-anim.html"><img src="./images/skeleton-anim.png" width="100%"></a><br>
-<b>Skeleton Animation</b><br><sub>SkinnedMesh · Bone hierarchy · skinning</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/normal-map.html"><img src="./images/normal-map.png" width="100%"></a><br>
-<b>Normal Map</b><br><sub>Procedural normal maps · surface detail</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/audio-visualizer.html"><img src="./images/audio-visualizer.png" width="100%"></a><br>
-<b>Audio Visualizer</b><br><sub>Web Audio FFT → 3D bar visualization</sub>
-</td>
-<td></td><td></td>
-</tr>
-</table>
-
-### New Advanced Examples
-
-<table>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/procedural-terrain.html"><img src="./images/procedural-terrain.png" width="100%"></a><br>
-<b>Procedural Terrain</b><br><sub>Multi-octave noise · heightmap · height coloring</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/text-3d.html"><img src="./images/text-3d.png" width="100%"></a><br>
-<b>3D Text</b><br><sub>FontLoader · TextGeometry · bevel · animation</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/fat-lines.html"><img src="./images/fat-lines.png" width="100%"></a><br>
-<b>Fat Lines</b><br><sub>Line2 · LineMaterial · configurable width · dashed</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/sky-atmosphere.html"><img src="./images/sky-atmosphere.png" width="100%"></a><br>
-<b>Sky Atmosphere</b><br><sub>Sky shader · sun position · Rayleigh scattering</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/procedural-city.html"><img src="./images/procedural-city.png" width="100%"></a><br>
-<b>Procedural City</b><br><sub>Random buildings · street grid · night lights</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/shader-extend.html"><img src="./images/shader-extend.png" width="100%"></a><br>
-<b>Shader Extend</b><br><sub>onBeforeCompile · GLSL injection · 5 effects</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/depth-of-field.html"><img src="./images/depth-of-field.png" width="100%"></a><br>
-<b>Depth of Field</b><br><sub>BokehPass · EffectComposer · focus control</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/texture-atlas.html"><img src="./images/texture-atlas.png" width="100%"></a><br>
-<b>Texture Atlas</b><br><sub>Sprite sheet · UV offset animation · billboards</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/particle-emitter.html"><img src="./images/particle-emitter.png" width="100%"></a><br>
-<b>Particle Emitter</b><br><sub>Pool recycling · lifetime · fade · physics</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/multi-material.html"><img src="./images/multi-material.png" width="100%"></a><br>
-<b>Multi Material</b><br><sub>Per-face material groups · Box/Cylinder/Cone</sub>
-</td>
-<td></td><td></td>
-</tr>
-</table>
 
 ---
 

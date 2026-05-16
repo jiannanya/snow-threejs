@@ -36,7 +36,51 @@
 <a href="./examples/shadows.html"><img src="./images/shadows.png" width="100%"></a><br>
 <b>Shadows</b><br><sub>阴影映射与软硬阴影</sub>
 </td>
-<td></td><td></td><td></td>
+<td align="center" width="25%">
+<a href="./examples/axes-helpers.html"><img src="./images/axes-helpers.png" width="100%"></a><br>
+<b>坐标轴辅助器</b><br><sub>AxesHelper · GridHelper · ArrowHelper · BoxHelper</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/wireframe-mode.html"><img src="./images/wireframe-mode.png" width="100%"></a><br>
+<b>线框模式</b><br><sub>实体 · WireframeGeometry · EdgesGeometry 对比</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/groups-hierarchy.html"><img src="./images/groups-hierarchy.png" width="100%"></a><br>
+<b>组与层级</b><br><sub>父子变换 · 太阳系层级结构</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/vertex-colors.html"><img src="./images/vertex-colors.png" width="100%"></a><br>
+<b>顶点颜色</b><br><sub>逐顶点着色 · HSL/渐变/噪声三种模式</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/transparent-blend.html"><img src="./images/transparent-blend.png" width="100%"></a><br>
+<b>透明与混合</b><br><sub>opacity · 普通混合 · 叠加混合</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/clock-easing.html"><img src="./images/clock-easing.png" width="100%"></a><br>
+<b>时钟与缓动</b><br><sub>THREE.Clock · 6种缓动函数对比</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/background-modes.html"><img src="./images/background-modes.png" width="100%"></a><br>
+<b>背景模式</b><br><sub>纯色 · 渐变纹理 · CubeMap 环境贴图</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/simple-physics.html"><img src="./images/simple-physics.png" width="100%"></a><br>
+<b>简单物理</b><br><sub>重力 · 弹性碰撞 · 墙壁边界检测</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/multi-viewport.html"><img src="./images/multi-viewport.png" width="100%"></a><br>
+<b>多视口渲染</b><br><sub>scissor 分屏 · 透视 + 正交双摄像机</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/css2d-labels.html"><img src="./images/css2d-labels.png" width="100%"></a><br>
+<b>CSS2D 标签</b><br><sub>CSS2DRenderer · 3D 投影 HTML 标签</sub>
+</td>
+<td></td>
 </tr>
 </table>
 
@@ -88,7 +132,50 @@
 <a href="./examples/sprite-billboard.html"><img src="./images/sprite-billboard.png" width="100%"></a><br>
 <b>Sprite Billboard</b><br><sub>精灵与公告板标注</sub>
 </td>
-<td></td><td></td>
+<td align="center" width="25%">
+<a href="./examples/curve-path.html"><img src="./images/curve-path.png" width="100%"></a><br>
+<b>曲线路径</b><br><sub>CatmullRomCurve3 · TubeGeometry · 路径跟随</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/shape-extrude.html"><img src="./images/shape-extrude.png" width="100%"></a><br>
+<b>形状拉伸</b><br><sub>THREE.Shape · ExtrudeGeometry · 倒角</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/lod.html"><img src="./images/lod.png" width="100%"></a><br>
+<b>细节层次</b><br><sub>THREE.LOD · 按距离切换细节级别</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/cube-camera.html"><img src="./images/cube-camera.png" width="100%"></a><br>
+<b>立方体摄像机</b><br><sub>CubeCamera · 实时环境反射</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/water-surface.html"><img src="./images/water-surface.png" width="100%"></a><br>
+<b>水面效果</b><br><sub>ShaderMaterial 波浪位移 · 浪花泡沫</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/outline-select.html"><img src="./images/outline-select.png" width="100%"></a><br>
+<b>描边选择</b><br><sub>OutlinePass · 点击/悬停高亮描边</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/render-target.html"><img src="./images/render-target.png" width="100%"></a><br>
+<b>渲染目标</b><br><sub>WebGLRenderTarget · 离屏渲染安全摄像头</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/skeleton-anim.html"><img src="./images/skeleton-anim.png" width="100%"></a><br>
+<b>骨骼动画</b><br><sub>SkinnedMesh · 骨骼层级 · 蒙皮权重</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/normal-map.html"><img src="./images/normal-map.png" width="100%"></a><br>
+<b>法线贴图</b><br><sub>程序化法线贴图 · 表面凹凸细节</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/audio-visualizer.html"><img src="./images/audio-visualizer.png" width="100%"></a><br>
+<b>音频可视化</b><br><sub>Web Audio FFT → 3D 频谱柱状图</sub>
+</td>
 </tr>
 </table>
 
@@ -118,7 +205,51 @@
 <a href="./examples/webgpu-basics.html"><img src="./images/webgpu-basics.png" width="100%"></a><br>
 <b>WebGPU Basics</b><br><sub>WebGPU 渲染器 + 降级</sub>
 </td>
-<td></td><td></td><td></td>
+<td align="center" width="25%">
+<a href="./examples/procedural-terrain.html"><img src="./images/procedural-terrain.png" width="100%"></a><br>
+<b>程序化地形</b><br><sub>多倍频噪声高度图 · 按高度着色</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/text-3d.html"><img src="./images/text-3d.png" width="100%"></a><br>
+<b>3D 文字</b><br><sub>FontLoader · TextGeometry · 倒角 · 动画</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/fat-lines.html"><img src="./images/fat-lines.png" width="100%"></a><br>
+<b>粗线渲染</b><br><sub>Line2 · LineMaterial · 可调线宽 · 虚线</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/sky-atmosphere.html"><img src="./images/sky-atmosphere.png" width="100%"></a><br>
+<b>天空大气</b><br><sub>Sky 着色器 · 太阳位置 · 瑞利散射</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/procedural-city.html"><img src="./images/procedural-city.png" width="100%"></a><br>
+<b>程序化城市</b><br><sub>随机建筑 · 街道网格 · 夜晚灯光</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/shader-extend.html"><img src="./images/shader-extend.png" width="100%"></a><br>
+<b>着色器扩展</b><br><sub>onBeforeCompile · GLSL 注入 · 5种特效</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/depth-of-field.html"><img src="./images/depth-of-field.png" width="100%"></a><br>
+<b>景深效果</b><br><sub>BokehPass · EffectComposer · 焦距控制</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<a href="./examples/texture-atlas.html"><img src="./images/texture-atlas.png" width="100%"></a><br>
+<b>纹理图集</b><br><sub>精灵表 · UV 偏移帧动画 · 广告牌</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/particle-emitter.html"><img src="./images/particle-emitter.png" width="100%"></a><br>
+<b>粒子发射器</b><br><sub>对象池复用 · 生命周期 · 淡出 · 物理</sub>
+</td>
+<td align="center" width="25%">
+<a href="./examples/multi-material.html"><img src="./images/multi-material.png" width="100%"></a><br>
+<b>多材质</b><br><sub>单网格多材质分组 · 每面独立材质</sub>
+</td>
+<td></td>
 </tr>
 </table>
 
@@ -901,166 +1032,6 @@ const renderer = await createRenderer();
 ```
 
 > **浏览器支持**: Chrome 113+ / Edge 113+ 支持 WebGPU；Firefox / Safari 暂用 WebGL 降级。
-
----
-
-## 新增示例（30个）
-
-### 新增初级示例
-
-<table>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/axes-helpers.html"><img src="./images/axes-helpers.png" width="100%"></a><br>
-<b>坐标轴辅助器</b><br><sub>AxesHelper · GridHelper · ArrowHelper · BoxHelper</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/wireframe-mode.html"><img src="./images/wireframe-mode.png" width="100%"></a><br>
-<b>线框模式</b><br><sub>实体 · WireframeGeometry · EdgesGeometry 对比</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/groups-hierarchy.html"><img src="./images/groups-hierarchy.png" width="100%"></a><br>
-<b>组与层级</b><br><sub>父子变换 · 太阳系层级结构</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/vertex-colors.html"><img src="./images/vertex-colors.png" width="100%"></a><br>
-<b>顶点颜色</b><br><sub>逐顶点着色 · HSL/渐变/噪声三种模式</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/transparent-blend.html"><img src="./images/transparent-blend.png" width="100%"></a><br>
-<b>透明与混合</b><br><sub>opacity · 普通混合 · 叠加混合</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/clock-easing.html"><img src="./images/clock-easing.png" width="100%"></a><br>
-<b>时钟与缓动</b><br><sub>THREE.Clock · 6种缓动函数对比</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/background-modes.html"><img src="./images/background-modes.png" width="100%"></a><br>
-<b>背景模式</b><br><sub>纯色 · 渐变纹理 · CubeMap 环境贴图</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/simple-physics.html"><img src="./images/simple-physics.png" width="100%"></a><br>
-<b>简单物理</b><br><sub>重力 · 弹性碰撞 · 墙壁边界检测</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/multi-viewport.html"><img src="./images/multi-viewport.png" width="100%"></a><br>
-<b>多视口渲染</b><br><sub>scissor 分屏 · 透视 + 正交双摄像机</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/css2d-labels.html"><img src="./images/css2d-labels.png" width="100%"></a><br>
-<b>CSS2D 标签</b><br><sub>CSS2DRenderer · 3D 投影 HTML 标签</sub>
-</td>
-<td></td><td></td>
-</tr>
-</table>
-
-### 新增中级示例
-
-<table>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/curve-path.html"><img src="./images/curve-path.png" width="100%"></a><br>
-<b>曲线路径</b><br><sub>CatmullRomCurve3 · TubeGeometry · 路径跟随</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/shape-extrude.html"><img src="./images/shape-extrude.png" width="100%"></a><br>
-<b>形状拉伸</b><br><sub>THREE.Shape · ExtrudeGeometry · 倒角</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/lod.html"><img src="./images/lod.png" width="100%"></a><br>
-<b>细节层次</b><br><sub>THREE.LOD · 按距离切换细节级别</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/cube-camera.html"><img src="./images/cube-camera.png" width="100%"></a><br>
-<b>立方体摄像机</b><br><sub>CubeCamera · 实时环境反射</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/water-surface.html"><img src="./images/water-surface.png" width="100%"></a><br>
-<b>水面效果</b><br><sub>ShaderMaterial 波浪位移 · 浪花泡沫</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/outline-select.html"><img src="./images/outline-select.png" width="100%"></a><br>
-<b>描边选择</b><br><sub>OutlinePass · 点击/悬停高亮描边</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/render-target.html"><img src="./images/render-target.png" width="100%"></a><br>
-<b>渲染目标</b><br><sub>WebGLRenderTarget · 离屏渲染安全摄像头</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/skeleton-anim.html"><img src="./images/skeleton-anim.png" width="100%"></a><br>
-<b>骨骼动画</b><br><sub>SkinnedMesh · 骨骼层级 · 蒙皮权重</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/normal-map.html"><img src="./images/normal-map.png" width="100%"></a><br>
-<b>法线贴图</b><br><sub>程序化法线贴图 · 表面凹凸细节</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/audio-visualizer.html"><img src="./images/audio-visualizer.png" width="100%"></a><br>
-<b>音频可视化</b><br><sub>Web Audio FFT → 3D 频谱柱状图</sub>
-</td>
-<td></td><td></td>
-</tr>
-</table>
-
-### 新增高级示例
-
-<table>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/procedural-terrain.html"><img src="./images/procedural-terrain.png" width="100%"></a><br>
-<b>程序化地形</b><br><sub>多倍频噪声高度图 · 按高度着色</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/text-3d.html"><img src="./images/text-3d.png" width="100%"></a><br>
-<b>3D 文字</b><br><sub>FontLoader · TextGeometry · 倒角 · 动画</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/fat-lines.html"><img src="./images/fat-lines.png" width="100%"></a><br>
-<b>粗线渲染</b><br><sub>Line2 · LineMaterial · 可调线宽 · 虚线</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/sky-atmosphere.html"><img src="./images/sky-atmosphere.png" width="100%"></a><br>
-<b>天空大气</b><br><sub>Sky 着色器 · 太阳位置 · 瑞利散射</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/procedural-city.html"><img src="./images/procedural-city.png" width="100%"></a><br>
-<b>程序化城市</b><br><sub>随机建筑 · 街道网格 · 夜晚灯光</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/shader-extend.html"><img src="./images/shader-extend.png" width="100%"></a><br>
-<b>着色器扩展</b><br><sub>onBeforeCompile · GLSL 注入 · 5种特效</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/depth-of-field.html"><img src="./images/depth-of-field.png" width="100%"></a><br>
-<b>景深效果</b><br><sub>BokehPass · EffectComposer · 焦距控制</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/texture-atlas.html"><img src="./images/texture-atlas.png" width="100%"></a><br>
-<b>纹理图集</b><br><sub>精灵表 · UV 偏移帧动画 · 广告牌</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<a href="./examples/particle-emitter.html"><img src="./images/particle-emitter.png" width="100%"></a><br>
-<b>粒子发射器</b><br><sub>对象池复用 · 生命周期 · 淡出 · 物理</sub>
-</td>
-<td align="center" width="25%">
-<a href="./examples/multi-material.html"><img src="./images/multi-material.png" width="100%"></a><br>
-<b>多材质</b><br><sub>单网格多材质分组 · 每面独立材质</sub>
-</td>
-<td></td><td></td>
-</tr>
-</table>
 
 ---
 
