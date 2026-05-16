@@ -1,10 +1,10 @@
-# Three.js 3D 图形技能库
+# snow-three 技能库
 
 > **语言**: 中文 | [English](./README.md)
 
 > **版本**: Three.js r167 (npm `0.167.1`) · **渲染器**: WebGL / WebGPU · **模块**: ES Modules via CDN importmap
 
-本技能库提供 20 个可直接运行的 HTML 示例、7 份参考文档，覆盖从基础场景搭建到高级着色器的完整 Three.js 开发知识体系。
+snow-three 技能库提供 20 个可直接运行的 HTML 示例、7 份参考文档，覆盖从基础场景搭建到高级着色器的完整 Three.js 开发知识体系。
 
 ---
 

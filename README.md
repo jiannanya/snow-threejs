@@ -1,10 +1,10 @@
-# Three.js 3D Graphics Skill Library
+# snow-three Skill Library
 
 > **Language**: English | [中文](./README_cn.md)
 
 > **Version**: Three.js r167 (npm `0.167.1`) · **Renderer**: WebGL / WebGPU · **Modules**: ES Modules via CDN importmap
 
-This skill library provides 20 ready-to-run HTML examples and 7 reference documents, covering the complete Three.js development knowledge base from basic scene setup to advanced shaders.
+The snow-three skill library provides 20 ready-to-run HTML examples and 7 reference documents, covering the complete Three.js development knowledge base from basic scene setup to advanced shaders.
 
 ---
 

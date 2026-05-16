@@ -1,10 +1,10 @@
 ---
-name: threejs
-description: "Three.js 3D graphics skill. Use when: creating 3D scenes, WebGL/WebGPU rendering, 3D animations, particle systems, shaders, post-processing effects, physics simulations, model loading (GLTF/OBJ/FBX), camera controls, raycasting, instanced rendering, environment maps, shadows, textures, TSL shaders. Covers all Three.js core APIs and addon features."
+name: snow-three
+description: "snow-three is a Three.js 3D graphics skill. Use when: creating 3D scenes, WebGL/WebGPU rendering, 3D animations, particle systems, shaders, post-processing effects, physics simulations, model loading (GLTF/OBJ/FBX), camera controls, raycasting, instanced rendering, environment maps, shadows, textures, TSL shaders. Covers all Three.js core APIs and addon features."
 argument-hint: "Describe the 3D effect or scene you want to create"
 ---
 
-# Three.js 3D Graphics Skill
+# snow-three
 
 Three.js (r184+) — JavaScript 3D library supporting WebGL and WebGPU renderers.
 
