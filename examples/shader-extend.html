@@ -64,7 +64,8 @@ function buildMaterial(mode) {
   mat.userData.mode = mode;
   mat.transparent = mode === 'xray';
   mat.depthWrite = mode !== 'xray';
-  mat.side = mode === 'xray' ? THREE.DoubleSide : THREE.FrontSide;
+  mat.side = THREE.FrontSide;
+  mat.blending = THREE.NormalBlending;
 
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = timeUniforms.uTime;
@@ -108,40 +109,37 @@ function buildMaterial(mode) {
        }`
     );
 
+    let opaqueFragment = '#include <opaque_fragment>';
+
     if (mode === 'noise') {
-      shader.fragmentShader = shader.fragmentShader.replace(
-        'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
-        `float n = fxNoise(vFxPos.xy * 2.2 + uTime * 0.5);
-         if (n < 0.35 + sin(uTime) * 0.2) discard;
-         gl_FragColor = vec4( outgoingLight, diffuseColor.a );`
-      );
+      opaqueFragment = `float n = fxNoise(vFxPos.xy * 2.2 + uTime * 0.5);
+        if (n < 0.35 + sin(uTime) * 0.2) discard;
+        gl_FragColor = vec4( outgoingLight, diffuseColor.a );`;
     } else if (mode === 'rainbow') {
-      shader.fragmentShader = shader.fragmentShader.replace(
-        'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
-        `vec3 rainbow = vec3(
-           sin(uTime + vFxPos.y * 2.5) * 0.5 + 0.5,
-           sin(uTime + vFxPos.y * 2.5 + 2.094) * 0.5 + 0.5,
-           sin(uTime + vFxPos.y * 2.5 + 4.188) * 0.5 + 0.5
-         );
-         gl_FragColor = vec4( outgoingLight * mix(vec3(1.0), rainbow, 0.85), diffuseColor.a );`
-      );
+      opaqueFragment = `float swirl = vFxPos.y * 2.6 + vFxPos.x * 1.4 - uTime * 1.8 + fxNoise(vFxPos.xz * 1.8) * 2.0;
+        vec3 rainbow = 0.52 + 0.48 * sin(vec3(0.0, 2.094, 4.188) + swirl);
+        float rim = pow(1.0 - clamp(dot(normalize(vFxNormal), normalize(vViewPosition)), 0.0, 1.0), 2.2);
+        vec3 tintedLight = mix(outgoingLight * 0.7, outgoingLight * rainbow * 1.35, 0.85);
+        gl_FragColor = vec4(tintedLight + rainbow * rim * 0.28, diffuseColor.a);`;
     } else if (mode === 'glitch') {
-      shader.fragmentShader = shader.fragmentShader.replace(
-        'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
-        `float band = floor((vFxPos.y + 2.0) * 6.0);
-         float glitch = step(0.82, fxHash(vec2(band, floor(uTime * 12.0))));
-         vec3 glitchTint = mix(vec3(1.0), vec3(1.8, 0.7, 1.3), glitch);
-         gl_FragColor = vec4( outgoingLight * glitchTint, diffuseColor.a );`
-      );
+      opaqueFragment = `float band = floor((vFxPos.y + 2.0) * 10.0 + uTime * 6.0);
+        float slice = step(0.76, fxHash(vec2(band, floor(uTime * 24.0))));
+        float scan = sin((vFxPos.y + uTime * 1.6) * 48.0) * 0.5 + 0.5;
+        vec3 digital = outgoingLight;
+        digital = mix(digital, digital.bgr * vec3(1.35, 0.9, 1.45), slice * 0.85);
+        digital += vec3(slice * 0.35, scan * 0.08, (1.0 - scan) * 0.18);
+        float alpha = diffuseColor.a * mix(1.0, 0.84, slice);
+        gl_FragColor = vec4(digital, alpha);`;
     } else if (mode === 'xray') {
-      shader.fragmentShader = shader.fragmentShader.replace(
-        'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
-        `float rim = 1.0 - abs(normalize(vFxNormal).z);
-         rim = pow(max(rim, 0.0), 2.5);
-         vec3 xrayColor = vec3(0.2, 0.8, 1.0) * (0.3 + rim);
-         gl_FragColor = vec4( xrayColor, rim * 0.9 );`
-      );
+      opaqueFragment = `float fresnel = 1.0 - clamp(dot(normalize(vFxNormal), normalize(vViewPosition)), 0.0, 1.0);
+        fresnel = pow(fresnel, 2.4);
+        float pulse = 0.75 + 0.25 * sin(uTime * 2.2 + vFxPos.y * 2.0);
+        vec3 shell = vec3(0.02, 0.08, 0.14);
+        vec3 edge = vec3(0.28, 0.95, 1.25) * fresnel * pulse;
+        gl_FragColor = vec4(shell + edge, clamp(0.04 + fresnel * 0.58, 0.0, 0.74));`;
     }
+
+    shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', opaqueFragment);
     mat.userData.shader = shader;
   };
   return mat;

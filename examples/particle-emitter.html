@@ -40,7 +40,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const scene    = new THREE.Scene();
 scene.background = new THREE.Color(0x04040e);
 const camera   = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 200);
-camera.position.set(0, 8, 20);
+camera.position.set(0, 6.5, 11.5);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -48,39 +48,53 @@ document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+controls.target.set(0, 2.5, 0);
 
 scene.add(new THREE.AmbientLight(0x223344, 1));
-scene.add(new THREE.GridHelper(30, 30, 0x111133, 0x0d0d22));
+scene.add(new THREE.GridHelper(24, 24, 0x111133, 0x0d0d22));
+
+const emitterLight = new THREE.PointLight(0xff8844, 25, 18, 2);
+emitterLight.position.set(0, 1.8, 0);
+scene.add(emitterLight);
 
 // ─── Particle pool ────────────────────────────────────────────────────
-const MAX_PARTICLES = 5000;
+const MAX_PARTICLES = 7000;
 const positions = new Float32Array(MAX_PARTICLES * 3);
 const particleColors = new Float32Array(MAX_PARTICLES * 3);
 const sizes     = new Float32Array(MAX_PARTICLES);
+const opacities = new Float32Array(MAX_PARTICLES);
 
 const pGeo = new THREE.BufferGeometry();
 pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 pGeo.setAttribute('particleColor', new THREE.BufferAttribute(particleColors, 3));
 pGeo.setAttribute('size',     new THREE.BufferAttribute(sizes, 1));
+pGeo.setAttribute('opacity',  new THREE.BufferAttribute(opacities, 1));
 
 const pMat = new THREE.ShaderMaterial({
   vertexShader: `
     attribute float size;
+    attribute float opacity;
     attribute vec3 particleColor;
     varying vec3 vParticleColor;
+    varying float vOpacity;
     void main() {
       vParticleColor = particleColor;
+      vOpacity = opacity;
       vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-      gl_PointSize = size * (300.0 / -mvPos.z);
+      gl_PointSize = size * (600.0 / -mvPos.z);
       gl_Position = projectionMatrix * mvPos;
     }
   `,
   fragmentShader: `
     varying vec3 vParticleColor;
+    varying float vOpacity;
     void main() {
-      float d = length(gl_PointCoord - 0.5) * 2.0;
+      vec2 uv = gl_PointCoord - 0.5;
+      float d = length(uv) * 2.0;
       if (d > 1.0) discard;
-      float a = 1.0 - smoothstep(0.5, 1.0, d);
+      float glow = exp(-d * d * 3.6);
+      float edge = 1.0 - smoothstep(0.2, 1.0, d);
+      float a = max(glow, edge * 0.6) * vOpacity;
       gl_FragColor = vec4(vParticleColor, a);
     }
   `,
@@ -93,80 +107,182 @@ scene.add(pSystem);
 // Particle pool
 const pool = Array.from({ length: MAX_PARTICLES }, () => ({
   active: false, life: 0, maxLife: 1,
+  mode: 'fire',
   px: 0, py: 0, pz: 0,
   vx: 0, vy: 0, vz: 0,
-  r: 1, g: 1, b: 1, size: 1,
+  r: 1, g: 1, b: 1,
+  baseSize: 1, size: 1, opacity: 1,
+  bounceCount: 0,
 }));
 
 let emitMode = 'fire';
-let emitRate = 30;
+let emitRate = 44;
 let gravity  = -2;
 let emitAccum = 0;
 
 const presets = {
   fire: {
+    rate: 1.0,
     spawn: (p) => {
-      const a = Math.random() * Math.PI * 2, r = Math.random() * 0.5;
-      p.px = Math.cos(a)*r; p.py = 0; p.pz = Math.sin(a)*r;
-      p.vx = (Math.random()-0.5)*1; p.vy = 2 + Math.random()*3; p.vz = (Math.random()-0.5)*1;
-      p.maxLife = 0.5 + Math.random()*0.8;
-      p.size = 0.5 + Math.random() * 0.5;
+      const a = Math.random() * Math.PI * 2;
+      const r = Math.random() * 0.45;
+      p.px = Math.cos(a) * r;
+      p.py = 0.15;
+      p.pz = Math.sin(a) * r;
+      p.vx = (Math.random() - 0.5) * 1.6;
+      p.vy = 4.5 + Math.random() * 3.2;
+      p.vz = (Math.random() - 0.5) * 1.6;
+      p.maxLife = 0.8 + Math.random() * 0.8;
+      p.baseSize = 2.4 + Math.random() * 2.3;
+      p.bounceCount = 0;
     },
-    color: (p, t) => {
-      p.r = 1; p.g = t * 0.4; p.b = 0;
+    simulate: (p, dt) => {
+      p.vx *= Math.exp(-1.6 * dt);
+      p.vz *= Math.exp(-1.6 * dt);
+      p.vx += (Math.random() - 0.5) * 1.5 * dt;
+      p.vz += (Math.random() - 0.5) * 1.5 * dt;
+      p.vy += 3.2 * dt;
+    },
+    render: (p, t) => {
+      p.r = 1.0;
+      p.g = 0.25 + (1.0 - t) * 0.55;
+      p.b = 0.06 + (1.0 - t) * 0.08;
+      p.size = p.baseSize * (1.35 - t * 0.8);
+      p.opacity = Math.max(0, 1.0 - t * 1.05);
     },
   },
   smoke: {
+    rate: 0.42,
     spawn: (p) => {
-      const a = Math.random() * Math.PI * 2, r = Math.random() * 0.3;
-      p.px = Math.cos(a)*r; p.py = 0.5; p.pz = Math.sin(a)*r;
-      p.vx = (Math.random()-0.5)*0.5; p.vy = 0.5 + Math.random()*1; p.vz = (Math.random()-0.5)*0.5;
-      p.maxLife = 2 + Math.random()*2;
-      p.size = 0.3 + Math.random() * 0.5;
+      const a = Math.random() * Math.PI * 2;
+      const r = Math.random() * 0.28;
+      p.px = Math.cos(a) * r;
+      p.py = 0.45;
+      p.pz = Math.sin(a) * r;
+      p.vx = (Math.random() - 0.5) * 0.7;
+      p.vy = 1.2 + Math.random() * 0.9;
+      p.vz = (Math.random() - 0.5) * 0.7;
+      p.maxLife = 3.2 + Math.random() * 2.2;
+      p.baseSize = 2.1 + Math.random() * 2.2;
+      p.bounceCount = 0;
     },
-    color: (p, t) => {
-      const v = 0.3 + t * 0.4;
-      p.r = v; p.g = v; p.b = v;
+    simulate: (p, dt) => {
+      p.vx *= Math.exp(-1.1 * dt);
+      p.vz *= Math.exp(-1.1 * dt);
+      p.vx += (Math.random() - 0.5) * 0.9 * dt;
+      p.vz += (Math.random() - 0.5) * 0.9 * dt;
+      p.vy += 1.9 * dt;
+    },
+    render: (p, t) => {
+      const v = 0.16 + t * 0.28;
+      p.r = v;
+      p.g = v + 0.02;
+      p.b = v + 0.04;
+      p.size = p.baseSize * (1.0 + t * 1.7);
+      p.opacity = Math.max(0, (1.0 - t) * 0.24);
     },
   },
   spark: {
+    rate: 0.28,
     spawn: (p) => {
-      const a = Math.random() * Math.PI * 2, el = (Math.random()-0.5)*Math.PI;
-      const s = 5 + Math.random()*5;
-      p.px = 0; p.py = 0; p.pz = 0;
-      p.vx = Math.cos(el)*Math.cos(a)*s; p.vy = Math.abs(Math.sin(el))*s; p.vz = Math.cos(el)*Math.sin(a)*s;
-      p.maxLife = 0.3 + Math.random()*0.5;
-      p.size = 0.2 + Math.random() * 0.2;
+      const a = Math.random() * Math.PI * 2;
+      const el = (Math.random() * 0.6 + 0.15) * Math.PI;
+      const s = 8 + Math.random() * 9;
+      p.px = 0;
+      p.py = 0.2;
+      p.pz = 0;
+      p.vx = Math.cos(a) * Math.cos(el) * s;
+      p.vy = Math.sin(el) * s;
+      p.vz = Math.sin(a) * Math.cos(el) * s;
+      p.maxLife = 0.8 + Math.random() * 0.7;
+      p.baseSize = 0.75 + Math.random() * 0.6;
+      p.bounceCount = 0;
     },
-    color: (p, t) => {
-      p.r = 1; p.g = 1 - t*0.5; p.b = t * 0.3;
+    simulate: (p, dt) => {
+      p.vx *= Math.exp(-0.35 * dt);
+      p.vz *= Math.exp(-0.35 * dt);
+      if (p.py <= 0.02 && p.vy < 0 && p.bounceCount < 2) {
+        p.py = 0.02;
+        p.vy *= -0.42;
+        p.vx *= 0.7;
+        p.vz *= 0.7;
+        p.bounceCount += 1;
+      }
+    },
+    render: (p, t) => {
+      p.r = 1.0;
+      p.g = 0.85 - t * 0.25;
+      p.b = 0.2 + t * 0.18;
+      p.size = p.baseSize * (1.0 - t * 0.45);
+      p.opacity = Math.max(0, 0.7 - t * 0.75);
     },
   },
   snow: {
+    rate: 0.78,
     spawn: (p) => {
-      p.px = (Math.random()-0.5)*20; p.py = 10 + Math.random()*5; p.pz = (Math.random()-0.5)*20;
-      p.vx = (Math.random()-0.5)*0.5; p.vy = 0; p.vz = (Math.random()-0.5)*0.5;
-      p.maxLife = 4 + Math.random()*4;
-      p.size = 0.2 + Math.random() * 0.3;
+      p.px = (Math.random() - 0.5) * 16;
+      p.py = 9 + Math.random() * 6;
+      p.pz = (Math.random() - 0.5) * 16;
+      p.vx = (Math.random() - 0.5) * 0.45;
+      p.vy = -0.2;
+      p.vz = (Math.random() - 0.5) * 0.45;
+      p.maxLife = 5.5 + Math.random() * 4;
+      p.baseSize = 1.6 + Math.random() * 1.2;
+      p.bounceCount = 0;
     },
-    color: (p, t) => {
-      p.r = 0.9; p.g = 0.95; p.b = 1;
+    simulate: (p, dt) => {
+      p.vx += (Math.random() - 0.5) * 0.18 * dt;
+      p.vz += (Math.random() - 0.5) * 0.18 * dt;
+      p.vx *= Math.exp(-0.2 * dt);
+      p.vz *= Math.exp(-0.2 * dt);
+      if (p.py <= 0.02) {
+        p.py = 0.02;
+        p.vx *= 0.94;
+        p.vz *= 0.94;
+        p.vy = 0;
+      }
+    },
+    render: (p, t) => {
+      p.r = 0.9;
+      p.g = 0.95;
+      p.b = 1.0;
+      p.size = p.baseSize * (1.0 - t * 0.25);
+      p.opacity = Math.max(0, 0.85 - t * 0.4);
     },
   },
 };
 
+function resetParticles() {
+  emitAccum = 0;
+  for (const p of pool) {
+    p.active = false;
+    p.life = 0;
+    p.opacity = 0;
+    p.size = 0;
+  }
+}
+
 function spawnParticle() {
   const p = pool.find(x => !x.active);
   if (!p) return;
-  p.active = true; p.life = 0;
-  presets[emitMode].spawn(p);
+  p.active = true;
+  p.life = 0;
+  p.mode = emitMode;
+  presets[p.mode].spawn(p);
 }
 
-document.getElementById('btnFire') .addEventListener('click', e => { emitMode='fire';  setA('btnFire'); });
-document.getElementById('btnSmoke').addEventListener('click', e => { emitMode='smoke'; setA('btnSmoke'); });
-document.getElementById('btnSpark').addEventListener('click', e => { emitMode='spark'; setA('btnSpark'); });
-document.getElementById('btnSnow') .addEventListener('click', e => { emitMode='snow';  setA('btnSnow'); });
+function switchMode(mode, buttonId) {
+  emitMode = mode;
+  resetParticles();
+  setA(buttonId);
+}
+
+document.getElementById('btnFire') .addEventListener('click', () => switchMode('fire', 'btnFire'));
+document.getElementById('btnSmoke').addEventListener('click', () => switchMode('smoke', 'btnSmoke'));
+document.getElementById('btnSpark').addEventListener('click', () => switchMode('spark', 'btnSpark'));
+document.getElementById('btnSnow') .addEventListener('click', () => switchMode('snow', 'btnSnow'));
 function setA(id) { ['btnFire','btnSmoke','btnSpark','btnSnow'].forEach(b=>document.getElementById(b).classList.toggle('active',b===id)); }
+document.getElementById('rate').value = String(emitRate);
 document.getElementById('rate')   .addEventListener('input', e => emitRate = +e.target.value);
 document.getElementById('gravity').addEventListener('input', e => gravity = +e.target.value);
 
@@ -182,7 +298,7 @@ renderer.setAnimationLoop(() => {
   const t  = clock.elapsedTime;
 
   // Emit
-  emitAccum += emitRate * dt;
+  emitAccum += emitRate * presets[emitMode].rate * dt;
   while (emitAccum >= 1) { spawnParticle(); emitAccum--; }
 
   // Update
@@ -192,13 +308,16 @@ renderer.setAnimationLoop(() => {
       positions[idx*3] = positions[idx*3+1] = positions[idx*3+2] = 0;
       particleColors[idx*3] = particleColors[idx*3+1] = particleColors[idx*3+2] = 0;
       sizes[idx] = 0;
+      opacities[idx] = 0;
     } else {
       p.life += dt;
       if (p.life >= p.maxLife) { p.active = false; idx++; return; }
       const tNorm = p.life / p.maxLife;
+      const preset = presets[p.mode];
       p.vy += gravity * dt;
+      preset.simulate(p, dt, gravity);
       p.px += p.vx * dt; p.py += p.vy * dt; p.pz += p.vz * dt;
-      presets[emitMode].color(p, tNorm);
+      preset.render(p, tNorm);
       const fade = 1 - Math.pow(tNorm, 2);
       positions[idx*3]   = p.px;
       positions[idx*3+1] = p.py;
@@ -207,6 +326,7 @@ renderer.setAnimationLoop(() => {
       particleColors[idx*3+1] = p.g * fade;
       particleColors[idx*3+2] = p.b * fade;
       sizes[idx] = p.size;
+      opacities[idx] = p.opacity;
     }
     idx++;
   });
@@ -214,6 +334,10 @@ renderer.setAnimationLoop(() => {
   pGeo.attributes.position.needsUpdate = true;
   pGeo.attributes.particleColor.needsUpdate = true;
   pGeo.attributes.size.needsUpdate     = true;
+  pGeo.attributes.opacity.needsUpdate  = true;
+
+  emitterLight.intensity = emitMode === 'snow' ? 5 : emitMode === 'smoke' ? 12 : 25;
+  emitterLight.color.setHex(emitMode === 'spark' ? 0xffcc55 : emitMode === 'snow' ? 0xcce6ff : 0xff8844);
 
   controls.update();
   renderer.render(scene, camera);
